@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { readBusinessSettings } from "@/lib/business-settings";
 import {
   getLocalInvoice,
   listLocalInvoices,
@@ -59,6 +60,14 @@ function getWorkSummary(invoice: Invoice) {
   return "Invoice items";
 }
 
+function formatBackupDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export default function LocalDashboard() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -68,6 +77,7 @@ export default function LocalDashboard() {
   const [lastBackupAt, setLastBackupAt] = useState<string | null>(null);
   const [backupState, setBackupState] = useState<"idle" | "preparing" | "success" | "error">("idle");
   const [backupMessage, setBackupMessage] = useState("");
+  const [setupChecklistDismissed, setSetupChecklistDismissed] = useState(false);
   const [quickPayInvoiceId, setQuickPayInvoiceId] = useState<string | null>(null);
   const [quickPayMethod, setQuickPayMethod] = useState<PaymentEvent["paymentMethod"]>("upi");
   const [savingInvoiceId, setSavingInvoiceId] = useState<string | null>(null);
@@ -99,6 +109,9 @@ export default function LocalDashboard() {
       readAppMetadata("last_backup_at").then((value) => {
         if (typeof value === "string" && value) setLastBackupAt(value);
       }),
+      readAppMetadata("dashboard_setup_checklist_dismissed").then((value) => {
+        if (typeof value === "boolean") setSetupChecklistDismissed(value);
+      }),
     ]);
   }, []);
 
@@ -120,6 +133,12 @@ export default function LocalDashboard() {
     .filter((invoice) => invoice.status !== "paid")
     .reduce((sum, invoice) => sum + invoice.total, 0);
 
+  const businessSettings = readBusinessSettings();
+  const businessProfileComplete = Boolean(businessSettings.businessName.trim());
+  const upiConfigured = Boolean(businessSettings.upiId.trim());
+  const backupConfigured = Boolean(lastBackupAt);
+  const showSetupChecklist = !setupChecklistDismissed && !(businessProfileComplete && upiConfigured && backupConfigured);
+
   async function handleBackupNow() {
     setBackupState("preparing");
     setBackupMessage("");
@@ -136,10 +155,10 @@ export default function LocalDashboard() {
       await writeAppMetadata("last_backup_at", timestamp);
       setLastBackupAt(timestamp);
       setBackupState("success");
-      setBackupMessage("Backup downloaded");
+      setBackupMessage("Backup file created");
     } catch {
       setBackupState("error");
-      setBackupMessage("Could not create backup");
+      setBackupMessage("Could not create backup file");
     }
   }
 
@@ -227,6 +246,40 @@ export default function LocalDashboard() {
         </section>
 
         {error && <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}<button type="button" onClick={() => void loadInvoices()} className="ml-3 font-bold underline">Retry</button></div>}
+
+        {showSetupChecklist && (
+          <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-black text-amber-900">Get BILLS ready</p>
+                <p className="mt-1 text-sm text-amber-800">Complete the essentials before you send your next bill.</p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  setSetupChecklistDismissed(true);
+                  await writeAppMetadata("dashboard_setup_checklist_dismissed", true);
+                }}
+                className="rounded-full border border-amber-300 bg-white px-2 py-1 text-xs font-bold text-amber-800"
+              >
+                Hide for now
+              </button>
+            </div>
+
+            <div className="mt-3 space-y-2 text-sm text-amber-900">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white/70 px-3 py-2">
+                <span>{businessProfileComplete ? "✓ Business profile completed" : "• Business profile completed"}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white/70 px-3 py-2">
+                <span>{upiConfigured ? "✓ UPI QR configured" : "• UPI QR configured"}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white/70 px-3 py-2">
+                <span>{backupConfigured ? "✓ Backup file created" : "• Backup file created"}</span>
+              </div>
+            </div>
+          </section>
+        )}
+
         {loading ? <p className="mt-8 font-bold">Loading local invoices...</p> : <>
           <div className="mt-6 flex justify-end">
             <button
@@ -254,8 +307,10 @@ export default function LocalDashboard() {
           <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-black text-slate-900">{lastBackupAt ? "✓ Saved on this phone" : "⚠ Saved on this phone"}</p>
-                <p className="mt-1 text-sm text-slate-600">{lastBackupAt ? `Last backup: ${new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(lastBackupAt))}` : "Backup not created yet"}</p>
+                <p className="text-sm font-black text-slate-900">Local backup status</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {lastBackupAt ? `Last backup file created: ${formatBackupDate(lastBackupAt)}` : "Backup not created yet"}
+                </p>
               </div>
             </div>
 
@@ -266,12 +321,12 @@ export default function LocalDashboard() {
               className="mt-4 inline-flex min-h-12 items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {backupState === "preparing"
-                ? "Preparing backup…"
+                ? "Preparing backup file…"
                 : backupState === "success"
-                  ? "Backup downloaded"
+                  ? "Backup file created"
                   : backupState === "error"
-                    ? "Could not create backup"
-                    : "Back up now"}
+                    ? "Could not create backup file"
+                    : "Create Backup File"}
             </button>
 
             {backupMessage && (
