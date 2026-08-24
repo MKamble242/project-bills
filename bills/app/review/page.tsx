@@ -273,20 +273,18 @@ function ReviewInvoiceContent() {
                 <span>Description</span>
                 <span>Amount</span>
               </div>
-
-              <div className="grid grid-cols-[1fr_auto] gap-4 px-4 py-5">
-                <div>
-                  <p className="font-bold">
-                    {description || "Description missing"}
-                  </p>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {quantity} × {formatCurrency(price)}
-                  </p>
-                </div>
-
-                <p className="font-black">{formatCurrency(subtotal)}</p>
-              </div>
+              {items.map((item) => {
+                const lineTotal = (item.quantity || 0) * (item.unitPrice || 0);
+                return (
+                  <div key={item.id} className="grid grid-cols-[1fr_auto] gap-4 border-t border-slate-100 px-4 py-4">
+                    <div>
+                      <p className="font-bold">{item.description || "Item"}</p>
+                      <p className="mt-1 text-sm text-slate-500">{item.quantity || 0} × {formatCurrency(item.unitPrice || 0)}</p>
+                    </div>
+                    <p className="font-black">{formatCurrency(lineTotal)}</p>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="ml-auto max-w-xs space-y-3">

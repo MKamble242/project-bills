@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import LocalDashboard from "@/components/LocalDashboard";
+import { formatCurrency, formatDateReadable } from "@/lib/formatters";
 
 export const dynamic = "force-dynamic";
 
@@ -21,22 +22,6 @@ type Invoice = {
   status: string;
   created_at: string;
 };
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatDate(dateString: string) {
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(dateString));
-}
 
 function getInitials(name: string) {
   return name
@@ -277,7 +262,7 @@ export default async function Home() {
 
                       <p className="mt-1 text-xs text-slate-400">
                         {invoice.invoice_number} ·{" "}
-                        {formatDate(invoice.created_at)}
+                        {formatDateReadable(invoice.created_at)}
                       </p>
                     </div>
                   </div>

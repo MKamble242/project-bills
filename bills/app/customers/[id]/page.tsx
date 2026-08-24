@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { findCustomer, type CustomerAggregate } from "@/lib/invoices/customer-repository";
 import { listLocalInvoices } from "@/lib/invoices/local-repository";
 import { readBusinessSettings } from "@/lib/business-settings";
+import { formatCurrency } from "@/lib/formatters";
 
-const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+const money = (value: number) => formatCurrency(value);
 
 function openWhatsApp(customer: CustomerAggregate, reminder: boolean) {
   let phone = customer.phone.replace(/\D/g, "");

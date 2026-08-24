@@ -2,17 +2,19 @@
 
 import { readBusinessSettings } from "@/lib/business-settings";
 import { readAppMetadata } from "@/lib/invoices/local-repository";
-import type { DocumentType, WhatsAppMessageLanguage } from "@/types/invoice";
+import type { DocumentType, InvoiceItem, WhatsAppMessageLanguage } from "@/types/invoice";
 
 type WhatsAppShareButtonProps = {
   phone: string | null;
   customerName: string;
   invoiceNumber: string;
-  description: string;
+  items?: InvoiceItem[];
+  description?: string; // Legacy fallback
   total: number;
   dueDays: number;
   businessName?: string;
   outstandingAmount?: number;
+  advanceReceived?: number;
   documentType?: DocumentType;
 };
 
@@ -37,11 +39,13 @@ export default function WhatsAppShareButton({
   phone,
   customerName,
   invoiceNumber,
+  items,
   description,
   total,
   dueDays,
   businessName = "Your Business Name",
   outstandingAmount = total,
+  advanceReceived = 0,
   documentType = "simple_bill",
 }: WhatsAppShareButtonProps) {
   async function shareOnWhatsApp() {
@@ -51,14 +55,27 @@ export default function WhatsAppShareButton({
     const resolvedBusinessName = settings.businessName || businessName;
     const normalizedPhone = normalizeIndianPhone(phone);
     const activeAmount = Number.isFinite(outstandingAmount) ? outstandingAmount : total;
-    const activeDescription = description?.trim() || "Invoice items";
+    const advanceAmount = Number.isFinite(advanceReceived) ? advanceReceived : 0;
     const upiId = settings.upiId?.trim() || "";
     const dueText = dueDays === 0 ? "Due immediately" : `Within ${dueDays} days`;
-    const formattedAmount = new Intl.NumberFormat("en-IN", {
+
+    // Format amounts
+    const formatAmount = (amount: number) => new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(activeAmount);
+    }).format(amount);
+
+    // Build item breakdown
+    const itemsToShow = items && items.length > 0 ? items : 
+      (description ? [{ id: "legacy", description, quantity: 1, unitPrice: total, gstRate: 0, lineTotal: total }] : []);
+    
+    const itemBreakdown = itemsToShow
+      .map((item) => {
+        const lineTotal = (item.quantity || 1) * (item.unitPrice || 0);
+        return `• ${item.description} — ${item.quantity} × ${formatAmount(item.unitPrice || 0)} = ${formatAmount(lineTotal)}`;
+      })
+      .join("\n");
 
     const paymentSection =
       activeAmount > 0 && settings.upiId?.trim()
@@ -73,32 +90,38 @@ ${buildUpiLink(activeAmount, invoiceNumber, resolvedBusinessName, settings.upiId
 
 Dear *${customerName || "Customer"}*,
 
-Here are your invoice details for *${activeDescription}*:
+Work details:
+${itemBreakdown}
 
-• Amount Due: *₹${formattedAmount}*
-• Payment Terms: *${dueText}*
-• From: *${resolvedBusinessName}*
-${upiId ? `• UPI ID: *${upiId}*` : ""}
+Total: *${formatAmount(total)}*
+${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Balance due: *${formatAmount(activeAmount)}*
 
-${paymentSection}${activeAmount > 0 ? "Please send a payment screenshot or UPI reference / UTR number after payment so we can record your payment.\n\n" : ""}
+Please verify payment through your UPI/bank app before recording it as paid.
 
-*Thank you!*`;
-  const hinglishMessage = `Namaste *${customerName || "Customer"} ji*,
+${paymentSection}${upiId ? `UPI ID: *${upiId}*\n` : ""}${resolvedBusinessName}`;
+
+    const hinglishMessage = `Namaste *${customerName || "Customer"} ji*,
 
 Aapka bill *${resolvedBusinessName}* se ready hai.
 
 📄 Bill No: *${invoiceNumber}*
-🛠️ Kaam: *${activeDescription}*
-💰 Baki Amount: *₹${formattedAmount}*
--  Payment Terms: *${dueText}*
-${upiId ? `-  UPI ID: *${upiId}*` : ""}
+🛠️ Kaam:
+${itemsToShow.map((item) => `  • ${item.description}`).join("\n")}
+
+💰 Total: *${formatAmount(total)}*
+${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Balance due: *${formatAmount(activeAmount)}*
+Payment Terms: *${dueText}*
+${upiId ? `UPI ID: *${upiId}*` : ""}
 
 ${activeAmount > 0 && settings.upiId?.trim() ? `📲 UPI se payment karein:
 ${buildUpiLink(activeAmount, invoiceNumber, resolvedBusinessName, settings.upiId.trim())}
 
-` : ""}${activeAmount > 0 ? "Payment ke baad screenshot ya UPI reference / UTR number bhej dein, taaki hum payment record kar saken.\n\n" : ""}*Dhanyavaad!*
+` : ""}Payment ke baad screenshot ya UPI reference / UTR number bhej dein, taaki hum payment record kar saken.
+
+*Dhanyavaad!*
 ${resolvedBusinessName}`;
-  const message = language === "hinglish" ? hinglishMessage : englishMessage;
+
+    const message = language === "hinglish" ? hinglishMessage : englishMessage;
 
     const fallbackUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     const whatsappUrl = normalizedPhone
