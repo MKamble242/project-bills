@@ -1,0 +1,19 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { aggregateCustomers, customerKey } from "@/lib/invoices/customer-repository";
+import { listLocalInvoices } from "@/lib/invoices/local-repository";
+import type { Invoice } from "@/types/invoice";
+
+const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
+export default function CustomersPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("recent");
+  const [error, setError] = useState("");
+  useEffect(() => { void listLocalInvoices().then(setInvoices).catch(() => setError("Could not load local customers.")); }, []);
+  const customers = useMemo(() => { const search = query.trim().toLowerCase(); return aggregateCustomers(invoices).filter((customer) => `${customer.name} ${customer.phone}`.toLowerCase().includes(search)).sort((left, right) => sort === "outstanding" ? right.outstanding - left.outstanding : sort === "alphabetical" ? left.name.localeCompare(right.name) : right.lastInvoiceDate.localeCompare(left.lastInvoiceDate)); }, [invoices, query, sort]);
+  return <main className="min-h-screen bg-[#f5f7fb] px-4 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><Link href="/" className="text-sm font-bold text-slate-500">← Back to dashboard</Link><div className="mt-8 flex items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Local ledger</p><h1 className="mt-2 text-4xl font-black">Customers</h1></div><Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white">New invoice</Link></div><div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name or phone" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 font-semibold" /><select value={sort} onChange={(event) => setSort(event.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 font-bold"><option value="recent">Most recent</option><option value="outstanding">Highest outstanding</option><option value="alphabetical">Alphabetical</option></select></div>{error && <p className="mt-4 rounded-xl bg-red-50 p-4 text-red-700">{error}</p>}{customers.length === 0 ? <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><h2 className="text-xl font-black">No customers yet.</h2><p className="mt-2 text-slate-500">Create an invoice and your customer will appear here.</p></div> : <div className="mt-8 grid gap-4 sm:grid-cols-2">{customers.map((customer) => <Link key={customer.key} href={`/customers/${encodeURIComponent(customerKey(customer.name, customer.phone))}`} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300"><div className="flex items-start justify-between gap-4"><div><p className="font-black">{customer.name}</p><p className="mt-1 text-sm text-slate-500">{customer.phone || "No phone number"}</p></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold">{customer.invoices.length} invoice{customer.invoices.length === 1 ? "" : "s"}</span></div><div className="mt-5 grid grid-cols-3 gap-2 text-sm"><div><p className="text-slate-500">Invoiced</p><p className="mt-1 font-black">{money(customer.totalInvoiced)}</p></div><div><p className="text-slate-500">Paid</p><p className="mt-1 font-black text-emerald-700">{money(customer.totalPaid)}</p></div><div><p className="text-slate-500">Due</p><p className="mt-1 font-black text-amber-700">{money(customer.outstanding)}</p></div></div></Link>)}</div>}</div></main>;
+}
