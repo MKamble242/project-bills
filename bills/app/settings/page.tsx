@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useAppLanguage } from "@/components/AppLanguageProvider";
 import {
   defaultBusinessSettings,
   readBusinessSettings,
   writeBusinessSettings,
   type BusinessSettings,
 } from "@/lib/business-settings";
+import { languageOptions, setStoredAppLanguage } from "@/lib/i18n";
 import { downloadText, invoiceCsv } from "@/lib/invoices/backup";
 import {
   createLocalBackup,
@@ -29,6 +31,7 @@ function getInitialStorageStatus(): "checking" | "enabled" | "unsupported" | "fa
 }
 
 export default function SettingsPage() {
+  const { language, dictionary, setLanguage } = useAppLanguage();
   const [settings, setSettings] = useState<BusinessSettings>(() => readBusinessSettings());
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -51,6 +54,11 @@ export default function SettingsPage() {
       })
       .catch(() => setStorageStatus("failed"));
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setStoredAppLanguage(language);
+  }, [language]);
 
   useEffect(() => {
     void readAppMetadata("whatsapp_message_language").then((value) => {
@@ -153,8 +161,43 @@ export default function SettingsPage() {
           ← Back to dashboard
         </Link>
 
-        <h1 className="mt-8 text-4xl font-black">Business settings</h1>
+        <h1 className="mt-8 text-4xl font-black">{dictionary.appPreferences}</h1>
         <p className="mt-2 text-slate-600">These settings are stored only on this device.</p>
+
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-black">{dictionary.appLanguage}</h2>
+          <div className="mt-4 space-y-3" role="radiogroup" aria-label={dictionary.appLanguage}>
+            {languageOptions.map((option) => (
+              <label
+                key={option.value}
+                className={`flex min-h-[52px] cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 transition ${
+                  language === option.value
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-slate-200 bg-white text-slate-700"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="app-language"
+                    checked={language === option.value}
+                    onChange={() => {
+                      setLanguage(option.value);
+                      setStoredAppLanguage(option.value);
+                    }}
+                    className="h-4 w-4 accent-blue-600"
+                  />
+                  <div>
+                    <div className="font-bold">{option.label}</div>
+                    <div className="text-xs opacity-75">{option.subtitle}</div>
+                  </div>
+                </div>
+                {language === option.value && <span aria-hidden="true">✓</span>}
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-slate-600">{dictionary.appLanguageNote}</p>
+        </section>
 
         <section className="mt-8 space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <label className="block text-sm font-bold">
