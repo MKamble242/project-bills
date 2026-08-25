@@ -15,6 +15,7 @@ import { createLocalBackup } from "@/lib/invoices/local-repository";
 import { downloadText } from "@/lib/invoices/backup";
 import type { Invoice, PaymentEvent } from "@/types/invoice";
 import OnlineStatus from "@/components/OnlineStatus";
+import { useAppLanguage } from "@/components/AppLanguageProvider";
 
 function currency(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -69,6 +70,7 @@ function formatBackupDate(dateString: string) {
 }
 
 export default function LocalDashboard() {
+  const { dictionary } = useAppLanguage();
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,9 +228,9 @@ export default function LocalDashboard() {
           </Link>
           <div className="flex items-center gap-2">
             <OnlineStatus />
-            <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Settings</Link>
-            <Link href="/customers" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">Customers</Link>
-            <Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">Create Invoice</Link>
+            <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">{dictionary.navSettings}</Link>
+            <Link href="/customers" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">{dictionary.navCustomers}</Link>
+            <Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">{dictionary.createBill}</Link>
           </div>
         </nav>
 
@@ -284,8 +286,8 @@ export default function LocalDashboard() {
           <div className="mt-6 flex justify-end">
             <button
               type="button"
-              aria-label={amountsHidden ? "Show amounts" : "Hide amounts"}
-              title={amountsHidden ? "Show amounts" : "Hide amounts"}
+              aria-label={amountsHidden ? dictionary.showAmounts : dictionary.hideAmounts}
+              title={amountsHidden ? dictionary.showAmounts : dictionary.hideAmounts}
               onClick={async () => {
                 const next = !amountsHidden;
                 setAmountsHidden(next);
@@ -294,7 +296,7 @@ export default function LocalDashboard() {
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm"
             >
               <span aria-hidden="true">👁</span>
-              {amountsHidden ? "Show amounts" : "Hide amounts"}
+              {amountsHidden ? dictionary.showAmounts : dictionary.hideAmounts}
             </button>
           </div>
 
@@ -307,7 +309,7 @@ export default function LocalDashboard() {
           <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-black text-slate-900">Local backup status</p>
+                <p className="text-sm font-black text-slate-900">{dictionary.backupStatus}</p>
                 <p className="mt-1 text-sm text-slate-600">
                   {lastBackupAt ? `Last backup file created: ${formatBackupDate(lastBackupAt)}` : "Backup not created yet"}
                 </p>

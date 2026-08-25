@@ -13,8 +13,10 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { calculateItemTotals } from "@/lib/invoices/calculations";
 import { readBusinessSettings } from "@/lib/business-settings";
 import type { DocumentType } from "@/types/invoice";
+import { useAppLanguage } from "@/components/AppLanguageProvider";
 
 function ReviewInvoiceContent() {
+  const { dictionary } = useAppLanguage();
   const searchParams = useSearchParams();
 
   const [approved, setApproved] = useState(false);
@@ -202,7 +204,7 @@ function ReviewInvoiceContent() {
           href="/invoices/new"
           className="text-sm font-bold text-slate-500 transition hover:text-slate-950"
         >
-          ← Edit invoice
+          ← {dictionary.continueEditing}
         </Link>
 
         <div className="mt-8">
@@ -211,7 +213,7 @@ function ReviewInvoiceContent() {
           </p>
 
           <h1 className="mt-2 text-4xl font-black tracking-tight">
-            Check before sending
+            {dictionary.reviewBill}
           </h1>
 
           <p className="mt-3 text-slate-600">
@@ -346,7 +348,7 @@ function ReviewInvoiceContent() {
           disabled={saving}
           className="mt-6 min-h-14 w-full rounded-2xl bg-blue-600 px-5 py-4 text-lg font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-200"
         >
-          {saving ? "Saving invoice..." : "Approve invoice →"}
+                {saving ? dictionary.saveBill : dictionary.reviewFinalize}
         </button>
 
         {errorMessage && (

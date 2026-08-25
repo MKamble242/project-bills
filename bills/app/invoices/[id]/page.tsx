@@ -199,6 +199,8 @@ export default async function InvoiceDetailsPage({ params }: Props) {
             description={invoice.description}
             total={Number(invoice.total)}
             outstandingAmount={Number(invoice.total)}
+            paidAmount={Number(invoice.advance_received ?? 0)}
+            invoiceDate={invoice.created_at}
             dueDays={invoice.due_days}
             businessName="Your Business Name"
           />

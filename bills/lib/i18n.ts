@@ -48,7 +48,41 @@ export type AppDictionaryKey =
   | "deleteAllLocalData"
   | "upiPaymentQr"
   | "setupUpiQr"
-  | "appLanguageNote";
+  | "appLanguageNote"
+  | "backDashboard"
+  | "invoiceDetails"
+  | "customer"
+  | "noPhone"
+  | "paymentDetails"
+  | "payByUpi"
+  | "editSettings"
+  | "close"
+  | "notConfigured"
+  | "tapToPay"
+  | "scanWithUpi"
+  | "useEditSettings"
+  | "terms"
+  | "paymentHistory"
+  | "noPayments"
+  | "totalPaid"
+  | "outstanding"
+  | "paidInFull"
+  | "settingsStored"
+  | "backupStatus"
+  | "noInvoices"
+  | "createFirstInvoice"
+  | "savedInvoices"
+  | "localOnly"
+  | "showAmounts"
+  | "hideAmounts"
+  | "businessName"
+  | "upiId"
+  | "phoneNumber"
+  | "gstin"
+  | "saveSettings"
+  | "backupAndData"
+  | "downloadFullBackup"
+  | "importBackup";
 
 export type AppDictionary = Record<AppDictionaryKey, string>;
 
@@ -108,6 +142,7 @@ export const dictionaries: Record<AppLanguage, AppDictionary> = {
     upiPaymentQr: "UPI Payment QR",
     setupUpiQr: "Set up UPI QR to collect payment",
     appLanguageNote: "Bills, customer details, and notes will not be translated automatically.",
+    backDashboard: "Back to dashboard", invoiceDetails: "Invoice details", customer: "Customer", noPhone: "No phone number", paymentDetails: "Payment details", payByUpi: "Pay by UPI", editSettings: "Edit settings", close: "Close", notConfigured: "Not configured", tapToPay: "Tap to Pay", scanWithUpi: "Scan with any UPI app.", useEditSettings: "Use Edit settings to configure payments.", terms: "Terms", paymentHistory: "Payment history", noPayments: "No payments recorded.", totalPaid: "Total paid", outstanding: "Outstanding", paidInFull: "Paid in full. Payment recorded manually.", settingsStored: "These settings are stored only on this device.", backupStatus: "Local backup status", noInvoices: "No invoices yet", createFirstInvoice: "Create first invoice", savedInvoices: "Saved invoices", localOnly: "Local only", showAmounts: "Show amounts", hideAmounts: "Hide amounts", businessName: "Business name", upiId: "UPI ID", phoneNumber: "Phone number", gstin: "GSTIN", saveSettings: "Save settings", backupAndData: "Backup and data", downloadFullBackup: "Download full backup", importBackup: "Import backup",
   },
   hi: {
     navHome: "होम",
@@ -158,6 +193,7 @@ export const dictionaries: Record<AppLanguage, AppDictionary> = {
     upiPaymentQr: "UPI भुगतान QR",
     setupUpiQr: "भुगतान लेने के लिए UPI QR सेट अप करें",
     appLanguageNote: "बिल, ग्राहक विवरण और नोट्स अपने आप अनुवाद नहीं किए जाएंगे।",
+    backDashboard: "डैशबोर्ड पर वापस", invoiceDetails: "बिल विवरण", customer: "ग्राहक", noPhone: "फोन नंबर नहीं है", paymentDetails: "भुगतान विवरण", payByUpi: "UPI से भुगतान", editSettings: "सेटिंग्स बदलें", close: "बंद करें", notConfigured: "सेट नहीं है", tapToPay: "भुगतान करें", scanWithUpi: "किसी भी UPI ऐप से स्कैन करें।", useEditSettings: "भुगतान सेट करने के लिए सेटिंग्स बदलें।", terms: "शर्तें", paymentHistory: "भुगतान इतिहास", noPayments: "कोई भुगतान दर्ज नहीं है।", totalPaid: "कुल भुगतान", outstanding: "बकाया", paidInFull: "पूरा भुगतान हो गया। भुगतान मैन्युअली दर्ज है।", settingsStored: "ये सेटिंग्स केवल इस डिवाइस पर सेव हैं।", backupStatus: "लोकल बैकअप स्थिति", noInvoices: "अभी कोई बिल नहीं है", createFirstInvoice: "पहला बिल बनाएं", savedInvoices: "सेव किए बिल", localOnly: "केवल लोकल", showAmounts: "राशि दिखाएं", hideAmounts: "राशि छिपाएं", businessName: "व्यवसाय का नाम", upiId: "UPI ID", phoneNumber: "फोन नंबर", gstin: "GSTIN", saveSettings: "सेटिंग्स सेव करें", backupAndData: "बैकअप और डेटा", downloadFullBackup: "पूरा बैकअप डाउनलोड करें", importBackup: "बैकअप इम्पोर्ट करें",
   },
   mr: {
     navHome: "मुख्यपृष्ठ",
@@ -194,7 +230,7 @@ export const dictionaries: Record<AppLanguage, AppDictionary> = {
     printBill: "बिल प्रिंट करा",
     callCustomer: "ग्राहकांना कॉल करा",
     paid: "पेड",
-    unpaid: "नविन",
+    unpaid: "अवैतनिक",
     partial: "आंशिक",
     draft: "ड्राफ्ट",
     appPreferences: "ऐप प्राधान्ये",
@@ -207,7 +243,8 @@ export const dictionaries: Record<AppLanguage, AppDictionary> = {
     deleteAllLocalData: "सर्व लोकल डेटा हटवा",
     upiPaymentQr: "UPI पेमेंट QR",
     setupUpiQr: "पेमेंट घेतल्यासाठी UPI QR सेट अप करा",
-    appLanguageNote: "बिले, ग्राहक तपशील आणि नोट्स ऑटो ट्रान्सलेट केले जाणार नाहीत.",
+    appLanguageNote: "बिले, ग्राहक तपशील आणि नोट्स आपोआप अनुवादित होणार नाहीत.",
+    backDashboard: "डॅशबोर्डवर परत", invoiceDetails: "बिल तपशील", customer: "ग्राहक", noPhone: "फोन नंबर नाही", paymentDetails: "पेमेंट तपशील", payByUpi: "UPI ने पेमेंट करा", editSettings: "सेटिंग्स बदला", close: "बंद करा", notConfigured: "सेट केलेले नाही", tapToPay: "पेमेंट करा", scanWithUpi: "कोणत्याही UPI अॅपने स्कॅन करा.", useEditSettings: "पेमेंट सेट करण्यासाठी सेटिंग्स बदला.", terms: "अटी", paymentHistory: "पेमेंट इतिहास", noPayments: "पेमेंट नोंदवलेले नाही.", totalPaid: "एकूण पेमेंट", outstanding: "देय बाकी", paidInFull: "पूर्ण पेमेंट झाले. पेमेंट मॅन्युअली नोंदवले आहे.", settingsStored: "या सेटिंग्स फक्त या डिव्हाइसवर जतन आहेत.", backupStatus: "लोकल बॅकअप स्थिती", noInvoices: "अद्याप बिले नाहीत", createFirstInvoice: "पहिले बिल तयार करा", savedInvoices: "जतन केलेली बिले", localOnly: "फक्त लोकल", showAmounts: "रक्कम दाखवा", hideAmounts: "रक्कम लपवा", businessName: "व्यवसायाचे नाव", upiId: "UPI ID", phoneNumber: "फोन नंबर", gstin: "GSTIN", saveSettings: "सेटिंग्स जतन करा", backupAndData: "बॅकअप आणि डेटा", downloadFullBackup: "पूर्ण बॅकअप डाउनलोड करा", importBackup: "बॅकअप इम्पोर्ट करा",
   },
 };
 

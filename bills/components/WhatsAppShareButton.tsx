@@ -15,6 +15,8 @@ type WhatsAppShareButtonProps = {
   businessName?: string;
   outstandingAmount?: number;
   advanceReceived?: number;
+  paidAmount?: number;
+  invoiceDate?: string;
   documentType?: DocumentType;
 };
 
@@ -29,12 +31,6 @@ export function normalizeIndianPhone(phone: string | null | undefined) {
   return "";
 }
 
-function buildUpiLink(amount: number, invoiceNumber: string, businessName: string, upiId: string) {
-  if (!upiId.trim()) return "";
-
-  return `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(businessName)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Bill_${invoiceNumber}`)}`;
-}
-
 export default function WhatsAppShareButton({
   phone,
   customerName,
@@ -42,22 +38,24 @@ export default function WhatsAppShareButton({
   items,
   description,
   total,
-  dueDays,
-  businessName = "Your Business Name",
+  businessName = "",
   outstandingAmount = total,
   advanceReceived = 0,
+  paidAmount,
+  invoiceDate,
   documentType = "simple_bill",
 }: WhatsAppShareButtonProps) {
   async function shareOnWhatsApp() {
     const settings = readBusinessSettings();
     const storedLanguage = await readAppMetadata("whatsapp_message_language");
-    const language: WhatsAppMessageLanguage = storedLanguage === "hinglish" ? "hinglish" : "simple_english";
-    const resolvedBusinessName = settings.businessName || businessName;
+    const language: WhatsAppMessageLanguage = storedLanguage === "simple_hindi" || storedLanguage === "simple_marathi" || storedLanguage === "hinglish" ? storedLanguage : "simple_english";
+    const resolvedBusinessName = settings.businessName.trim() || businessName.trim();
     const normalizedPhone = normalizeIndianPhone(phone);
-    const activeAmount = Number.isFinite(outstandingAmount) ? outstandingAmount : total;
+    const activeAmount = Number.isFinite(outstandingAmount) ? Math.max(0, outstandingAmount) : Math.max(0, total);
     const advanceAmount = Number.isFinite(advanceReceived) ? advanceReceived : 0;
+    const totalPaid = Number.isFinite(paidAmount) ? Math.max(0, paidAmount as number) : Math.max(0, advanceAmount);
     const upiId = settings.upiId?.trim() || "";
-    const dueText = dueDays === 0 ? "Due immediately" : `Within ${dueDays} days`;
+    const dateText = invoiceDate ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(invoiceDate)) : new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date());
 
     // Format amounts
     const formatAmount = (amount: number) => new Intl.NumberFormat("en-IN", {
@@ -77,51 +75,10 @@ export default function WhatsAppShareButton({
       })
       .join("\n");
 
-    const paymentSection =
-      activeAmount > 0 && settings.upiId?.trim()
-        ? `
-📲 Click to Pay via UPI:
-${buildUpiLink(activeAmount, invoiceNumber, resolvedBusinessName, settings.upiId.trim())}
-
-`
-        : "";
-
-    const englishMessage = `${documentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}: *${invoiceNumber}*
-
-Dear *${customerName || "Customer"}*,
-
-Work details:
-${itemBreakdown}
-
-Total: *${formatAmount(total)}*
-${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Balance due: *${formatAmount(activeAmount)}*
-
-Please verify payment through your UPI/bank app before recording it as paid.
-
-${paymentSection}${upiId ? `UPI ID: *${upiId}*\n` : ""}${resolvedBusinessName}`;
-
-    const hinglishMessage = `Namaste *${customerName || "Customer"} ji*,
-
-Aapka bill *${resolvedBusinessName}* se ready hai.
-
-📄 Bill No: *${invoiceNumber}*
-🛠️ Kaam:
-${itemsToShow.map((item) => `  • ${item.description}`).join("\n")}
-
-💰 Total: *${formatAmount(total)}*
-${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Balance due: *${formatAmount(activeAmount)}*
-Payment Terms: *${dueText}*
-${upiId ? `UPI ID: *${upiId}*` : ""}
-
-${activeAmount > 0 && settings.upiId?.trim() ? `📲 UPI se payment karein:
-${buildUpiLink(activeAmount, invoiceNumber, resolvedBusinessName, settings.upiId.trim())}
-
-` : ""}Payment ke baad screenshot ya UPI reference / UTR number bhej dein, taaki hum payment record kar saken.
-
-*Dhanyavaad!*
-${resolvedBusinessName}`;
-
-    const message = language === "hinglish" ? hinglishMessage : englishMessage;
+    const commonEnglish = `${documentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}: *${invoiceNumber}*\nDate: ${dateText}\n\nDear *${customerName || "Customer"}*,\n\nItems:\n${itemBreakdown}\n\nTotal: *${formatAmount(total)}*\n${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Amount paid: *${formatAmount(totalPaid)}*\nBalance due: *${formatAmount(activeAmount)}*${upiId ? `\n\nYou can pay using any UPI app.\nUPI ID: \`${upiId}\`` : ""}${resolvedBusinessName ? `\n\n${resolvedBusinessName}` : ""}`;
+    const commonHindi = `${documentType === "tax_invoice" ? "टैक्स इनवॉइस" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nविवरण:\n${itemBreakdown}\n\nकुल: *${formatAmount(total)}*\n${advanceAmount > 0 ? `एडवांस प्राप्त: *${formatAmount(advanceAmount)}*\n` : ""}भुगतान प्राप्त: *${formatAmount(totalPaid)}*\nबकाया राशि: *${formatAmount(activeAmount)}*${upiId ? `\n\nआप किसी भी UPI ऐप से भुगतान कर सकते हैं।\nUPI ID: \`${upiId}\`` : ""}${resolvedBusinessName ? `\n\n${resolvedBusinessName}` : ""}`;
+    const commonMarathi = `${documentType === "tax_invoice" ? "कर बिल" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nतपशील:\n${itemBreakdown}\n\nएकूण: *${formatAmount(total)}*\n${advanceAmount > 0 ? `आगाऊ मिळाले: *${formatAmount(advanceAmount)}*\n` : ""}मिळालेले पेमेंट: *${formatAmount(totalPaid)}*\nदेय बाकी: *${formatAmount(activeAmount)}*${upiId ? `\n\nआपण कोणत्याही UPI अॅपमधून पेमेंट करू शकता।\nUPI ID: \`${upiId}\`` : ""}${resolvedBusinessName ? `\n\n${resolvedBusinessName}` : ""}`;
+    const message = language === "simple_hindi" ? commonHindi : language === "simple_marathi" ? commonMarathi : commonEnglish;
 
     const fallbackUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     const whatsappUrl = normalizedPhone

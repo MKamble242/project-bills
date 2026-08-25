@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   getDictionary,
   getInitialAppLanguage,
@@ -18,10 +18,23 @@ type AppLanguageContextValue = {
 const AppLanguageContext = createContext<AppLanguageContextValue | null>(null);
 
 export function AppLanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<AppLanguage>(() => getInitialAppLanguage());
+  const [language, setLanguageState] = useState<AppLanguage>("en");
+  const initialized = useRef(false);
 
   useEffect(() => {
-    setStoredAppLanguage(language);
+    const timer = window.setTimeout(() => {
+      setLanguageState(getInitialAppLanguage());
+      initialized.current = true;
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (initialized.current) setStoredAppLanguage(language);
+  }, [language]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
   }, [language]);
 
   const value = useMemo<AppLanguageContextValue>(

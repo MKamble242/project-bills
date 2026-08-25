@@ -22,29 +22,20 @@ import type { WhatsAppMessageLanguage } from "@/types/invoice";
 
 type Preview = { backup: LocalBackup; invalidRecords: number };
 
-function getInitialStorageStatus(): "checking" | "enabled" | "unsupported" | "failed" {
-  if (typeof navigator === "undefined" || !navigator.storage || !navigator.storage.persist) {
-    return "unsupported";
-  }
-
-  return "checking";
-}
-
 export default function SettingsPage() {
   const { language, dictionary, setLanguage } = useAppLanguage();
   const [settings, setSettings] = useState<BusinessSettings>(() => readBusinessSettings());
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false);
-  const [storageStatus, setStorageStatus] = useState<"checking" | "enabled" | "unsupported" | "failed">(
-    getInitialStorageStatus
-  );
+  const [storageStatus, setStorageStatus] = useState<"checking" | "enabled" | "unsupported" | "failed">("checking");
   const [messageLanguage, setMessageLanguage] = useState<WhatsAppMessageLanguage>("simple_english");
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.storage || !navigator.storage.persist) {
-      return;
+      const timer = window.setTimeout(() => setStorageStatus("unsupported"), 0);
+      return () => window.clearTimeout(timer);
     }
 
     void navigator.storage
@@ -62,7 +53,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     void readAppMetadata("whatsapp_message_language").then((value) => {
-      if (value === "hinglish" || value === "simple_english") setMessageLanguage(value);
+      if (value === "hinglish" || value === "simple_english" || value === "simple_hindi" || value === "simple_marathi") setMessageLanguage(value);
     });
   }, []);
 
@@ -162,7 +153,7 @@ export default function SettingsPage() {
         </Link>
 
         <h1 className="mt-8 text-4xl font-black">{dictionary.appPreferences}</h1>
-        <p className="mt-2 text-slate-600">These settings are stored only on this device.</p>
+        <p className="mt-2 text-slate-600">{dictionary.settingsStored}</p>
 
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">{dictionary.appLanguage}</h2>
@@ -201,7 +192,7 @@ export default function SettingsPage() {
 
         <section className="mt-8 space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <label className="block text-sm font-bold">
-            Business name
+            {dictionary.businessName}
             <input
               value={settings.businessName}
               onChange={(event) => setSettings({ ...settings, businessName: event.target.value })}
@@ -210,7 +201,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block text-sm font-bold">
-            UPI ID
+            {dictionary.upiId}
             <input
               value={settings.upiId}
               onChange={(event) => setSettings({ ...settings, upiId: event.target.value })}
@@ -220,7 +211,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block text-sm font-bold">
-            Phone number
+            {dictionary.phoneNumber}
             <input
               value={settings.phoneNumber}
               onChange={(event) => setSettings({ ...settings, phoneNumber: event.target.value })}
@@ -229,7 +220,7 @@ export default function SettingsPage() {
           </label>
 
           <label className="block text-sm font-bold">
-            GSTIN
+            {dictionary.gstin}
             <input
               value={settings.gstin}
               onChange={(event) => setSettings({ ...settings, gstin: event.target.value.toUpperCase() })}
@@ -240,29 +231,29 @@ export default function SettingsPage() {
           </label>
 
           <button type="button" onClick={save} className="min-h-12 rounded-xl bg-blue-600 px-5 py-3 font-bold text-white">
-            Save settings
+            {dictionary.saveSettings}
           </button>
         </section>
 
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-black">WhatsApp message language</h2>
+          <h2 className="text-xl font-black">{dictionary.whatsAppMessageLanguage}</h2>
           <p className="mt-2 text-sm text-slate-600">Choose the language used when sharing invoice messages on WhatsApp.</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {(["simple_english", "hinglish"] as const).map((language) => (
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {(["simple_english", "simple_hindi", "simple_marathi", "hinglish"] as const).map((language) => (
               <button
                 key={language}
                 type="button"
                 onClick={() => { setMessageLanguage(language); void writeAppMetadata("whatsapp_message_language", language); }}
                 className={`rounded-xl border px-4 py-3 text-sm font-bold ${messageLanguage === language ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"}`}
               >
-                {language === "simple_english" ? "Simple English" : "Hinglish"}
+                {language === "simple_english" ? "Simple English" : language === "simple_hindi" ? "Simple Hindi" : language === "simple_marathi" ? "Simple Marathi" : "Hinglish (legacy)"}
               </button>
             ))}
           </div>
         </section>
 
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-black">Backup and data</h2>
+          <h2 className="text-xl font-black">{dictionary.backupAndData}</h2>
           <p className="mt-2 text-sm text-slate-600">
             Your invoices are stored on this device. Download a backup before changing phones or clearing browser data.
           </p>
@@ -274,7 +265,7 @@ export default function SettingsPage() {
               onClick={() => void exportFiles()}
               className="min-h-12 rounded-xl bg-slate-950 px-5 py-3 font-bold text-white"
             >
-              {busy ? "Preparing backup..." : "Download full backup"}
+              {busy ? "Preparing backup..." : dictionary.downloadFullBackup}
             </button>
 
             <label className="flex min-h-12 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700">
@@ -288,7 +279,7 @@ export default function SettingsPage() {
                   if (file) void inspect(file);
                 }}
               />
-              Import backup
+              {dictionary.importBackup}
             </label>
           </div>
 

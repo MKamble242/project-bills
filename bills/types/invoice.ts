@@ -14,7 +14,7 @@ export type InvoiceStatus = (typeof invoiceStatuses)[number];
 export type SyncStatus = "local_only" | "pending" | "syncing" | "synced" | "conflict" | "failed";
 
 export type DocumentType = "simple_bill" | "tax_invoice";
-export type WhatsAppMessageLanguage = "simple_english" | "hinglish";
+export type WhatsAppMessageLanguage = "simple_english" | "simple_hindi" | "simple_marathi" | "hinglish";
 
 export type InvoiceDraft = {
   documentType: DocumentType;

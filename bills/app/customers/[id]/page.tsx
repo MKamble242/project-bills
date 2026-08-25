@@ -15,8 +15,9 @@ function openWhatsApp(customer: CustomerAggregate, reminder: boolean) {
   if (!/^91[6-9]\d{9}$/.test(phone)) { alert("Please add a valid Indian mobile number before using WhatsApp."); return; }
   const invoice = customer.invoices[0];
   const settings = readBusinessSettings();
-  const link = settings.upiId ? `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.businessName)}&am=${customer.outstanding.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Invoice_${invoice.invoiceNumber}`)}` : "";
-  const message = reminder ? `Hello ${customer.name},\n\nA reminder for invoice ${invoice.invoiceNumber}.\n\nOutstanding amount: ${money(customer.outstanding)}\n\n${link ? `You can pay through UPI here:\n${link}\n\n` : ""}Thank you,\n${settings.businessName}` : `Hello ${customer.name},\n\nYour invoice ${invoice.invoiceNumber} is ready.\n\nAmount: ${money(invoice.total)}\n\n${link ? `You can pay through UPI here:\n${link}\n\n` : ""}Thank you,\n${settings.businessName}`;
+  const upiText = settings.upiId ? `You can pay using any UPI app.\nUPI ID: \`${settings.upiId}\`\n\n` : "";
+  const businessName = settings.businessName === "Your Business Name" ? "" : `${settings.businessName}\n`;
+  const message = reminder ? `Hello ${customer.name},\n\nA reminder for invoice ${invoice.invoiceNumber}.\n\nOutstanding amount: ${money(customer.outstanding)}\n\n${upiText}${businessName}Thank you.` : `Hello ${customer.name},\n\nYour invoice ${invoice.invoiceNumber} is ready.\n\nAmount: ${money(invoice.total)}\n\n${upiText}${businessName}Thank you.`;
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
 }
 

@@ -11,6 +11,7 @@ import {
   type InvoiceDraft,
 } from "@/lib/invoices/draft-storage";
 import type { DocumentType, InvoiceItemDraft, PaymentEvent } from "@/types/invoice";
+import { useAppLanguage } from "@/components/AppLanguageProvider";
 
 const gstinPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
@@ -23,6 +24,7 @@ function newItem(gstRate: number): InvoiceItemDraft {
 }
 
 function InvoiceForm() {
+  const { dictionary } = useAppLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [hydrated, setHydrated] = useState(false);
@@ -161,14 +163,14 @@ function InvoiceForm() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Link href="/" className="text-sm font-bold text-slate-500 hover:text-slate-950">← Back to dashboard</Link>
-      <div className="mt-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Create</p><h1 className="mt-2 text-4xl font-black tracking-tight">New Invoice</h1></div>
+      <Link href="/" className="text-sm font-bold text-slate-500 hover:text-slate-950">← {dictionary.backDashboard}</Link>
+      <div className="mt-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{dictionary.createBill}</p><h1 className="mt-2 text-4xl font-black tracking-tight">{dictionary.newBill.replace("+ ", "")}</h1></div>
       <form onSubmit={handleSubmit} className="mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Bill type</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{dictionary.simpleBill}</p>
           <div className="mt-2 grid grid-cols-2 gap-3">
             {(["simple_bill", "tax_invoice"] as const).map((type) => (
-              <button key={type} type="button" disabled={type === "tax_invoice" && !hasGstin} onClick={() => { setDocumentType(type); if (type === "simple_bill") { setGstRate(0); setItems((current) => current.map((item) => ({ ...item, gstRate: 0 }))); } }} className={`rounded-xl border px-4 py-3 text-sm font-bold ${documentType === type ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"} disabled:cursor-not-allowed disabled:opacity-50`}>{type === "simple_bill" ? "Simple Bill" : "Tax Invoice"}</button>
+              <button key={type} type="button" disabled={type === "tax_invoice" && !hasGstin} onClick={() => { setDocumentType(type); if (type === "simple_bill") { setGstRate(0); setItems((current) => current.map((item) => ({ ...item, gstRate: 0 }))); } }} className={`rounded-xl border px-4 py-3 text-sm font-bold ${documentType === type ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"} disabled:cursor-not-allowed disabled:opacity-50`}>{type === "simple_bill" ? dictionary.simpleBill : dictionary.taxInvoice}</button>
             ))}
           </div>
           {!hasGstin && <p className="mt-2 text-xs text-slate-500">Add a valid GSTIN in Settings to enable Tax Invoice.</p>}
@@ -187,7 +189,7 @@ function InvoiceForm() {
         {documentType === "tax_invoice" && <label className="block text-sm font-bold">Tax rate default<select value={gstRate} onChange={(event) => { const next = Number(event.target.value); setGstRate(next); setItems((current) => current.map((item) => ({ ...item, gstRate: next }))); }} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3"><option value={0}>0%</option><option value={5}>5%</option><option value={12}>12%</option><option value={18}>18%</option><option value={28}>28%</option></select></label>}
 
         <div className="space-y-2 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600"><div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal.toLocaleString("en-IN")}</span></div>{documentType === "tax_invoice" && <div className="flex justify-between"><span>GST</span><span>₹{gstAmount.toLocaleString("en-IN")}</span></div>}<div className="flex justify-between border-t border-slate-200 pt-2 text-base font-black text-slate-900"><span>Total Amount</span><span>₹{total.toLocaleString("en-IN")}</span></div></div>
-        <div><label className="block text-sm font-bold">Advance Received<input type="number" min="0" step="0.01" value={advanceReceived || ""} onChange={(event) => { setAdvanceReceived(event.target.value === "" ? 0 : Number(event.target.value)); setAdvanceError(""); }} placeholder="0" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label><p className="mt-1 text-xs text-slate-500">Money already received before this bill.</p>{advanceReceived > 0 && <div className="mt-3 space-y-1 text-sm"><div className="flex justify-between"><span>Advance Received</span><span>₹{advanceReceived.toLocaleString("en-IN")}</span></div><div className="flex justify-between font-black text-slate-900"><span>Balance Due</span><span>₹{balanceDue.toLocaleString("en-IN")}</span></div></div>}</div>
+        <div><label className="block text-sm font-bold">{dictionary.advanceReceived}<input type="number" min="0" step="0.01" value={advanceReceived || ""} onChange={(event) => { setAdvanceReceived(event.target.value === "" ? 0 : Number(event.target.value)); setAdvanceError(""); }} placeholder="0" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label><p className="mt-1 text-xs text-slate-500">Money already received before this bill.</p>{advanceReceived > 0 && <div className="mt-3 space-y-1 text-sm"><div className="flex justify-between"><span>{dictionary.advanceReceived}</span><span>₹{advanceReceived.toLocaleString("en-IN")}</span></div><div className="flex justify-between font-black text-slate-900"><span>{dictionary.balanceDue}</span><span>₹{balanceDue.toLocaleString("en-IN")}</span></div></div>}</div>
         {advanceReceived > 0 && <div><p className="text-sm font-bold">Advance payment method</p><div className="mt-2 grid grid-cols-2 gap-3">{(["upi", "cash"] as const).map((method) => <button key={method} type="button" onClick={() => setAdvancePaymentMethod(method)} className={`rounded-xl border px-3 py-3 text-sm font-bold ${advancePaymentMethod === method ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200"}`}>{method === "upi" ? "UPI" : "Cash"}</button>)}</div></div>}
         <label className="block text-sm font-bold">Notes<textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-2 min-h-20 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
         {advanceError && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{advanceError}</p>}
