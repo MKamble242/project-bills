@@ -23,6 +23,37 @@ function formatCurrency(amount: number) {
   }).format(amount);
 }
 
+function getStatusBadge(status: string) {
+  const normalizedStatus = status.toLowerCase();
+  const badges: Record<string, { label: string; className: string }> = {
+    paid: {
+      label: "PAID",
+      className: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    },
+    partially_paid: {
+      label: "PARTIALLY PAID",
+      className: "border-amber-200 bg-amber-50 text-amber-900",
+    },
+    unpaid: {
+      label: "UNPAID",
+      className: "border-rose-200 bg-rose-50 text-rose-800",
+    },
+    draft: {
+      label: "DRAFT",
+      className: "border-slate-200 bg-slate-100 text-slate-700",
+    },
+  };
+  const badge = badges[normalizedStatus] ?? {
+    label: "INVOICE STATUS",
+    className: "border-slate-200 bg-slate-100 text-slate-700",
+  };
+
+  return {
+    ...badge,
+    ariaLabel: `Invoice status: ${badge.label.toLowerCase()}`,
+  };
+}
+
 export default async function InvoiceDetailsPage({ params }: Props) {
   const { id } = await params;
   if (!isSupabaseConfigured() && id.startsWith("local_")) {
@@ -51,19 +82,22 @@ export default async function InvoiceDetailsPage({ params }: Props) {
           ← Back to dashboard
         </Link>
 
-        <div className="mt-8 flex items-start justify-between gap-4">
-          <div>
+        <div className="mt-8 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
               Invoice details
             </p>
 
-            <h1 className="mt-2 text-4xl font-black tracking-tight">
+            <h1 className="mt-2 max-w-full break-words text-base font-bold leading-tight tracking-tight sm:text-lg">
               {invoice.invoice_number}
             </h1>
           </div>
 
-          <span className="rounded-full bg-amber-100 px-3 py-2 text-xs font-bold text-amber-700">
-            {invoice.status}
+          <span
+            aria-label={getStatusBadge(invoice.status).ariaLabel}
+            className={`inline-flex min-h-7 shrink-0 items-center rounded-full border px-3 py-1 text-xs font-bold ${getStatusBadge(invoice.status).className}`}
+          >
+            {getStatusBadge(invoice.status).label}
           </span>
         </div>
 

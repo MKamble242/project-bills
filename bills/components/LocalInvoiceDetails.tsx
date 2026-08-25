@@ -18,6 +18,37 @@ function currency(value: number) {
   }).format(value);
 }
 
+function getStatusBadge(status: string) {
+  const normalizedStatus = status.toLowerCase();
+  const badges: Record<string, { label: string; className: string }> = {
+    paid: {
+      label: "PAID",
+      className: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    },
+    partially_paid: {
+      label: "PARTIALLY PAID",
+      className: "border-amber-200 bg-amber-50 text-amber-900",
+    },
+    unpaid: {
+      label: "UNPAID",
+      className: "border-rose-200 bg-rose-50 text-rose-800",
+    },
+    draft: {
+      label: "DRAFT",
+      className: "border-slate-200 bg-slate-100 text-slate-700",
+    },
+  };
+  const badge = badges[normalizedStatus] ?? {
+    label: "INVOICE STATUS",
+    className: "border-slate-200 bg-slate-100 text-slate-700",
+  };
+
+  return {
+    ...badge,
+    ariaLabel: `Invoice status: ${badge.label.toLowerCase()}`,
+  };
+}
+
 export default function LocalInvoiceDetails({ id }: { id: string }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,8 +106,18 @@ export default function LocalInvoiceDetails({ id }: { id: string }) {
     <main className="min-h-screen bg-[#f5f7fb] px-4 py-8 text-slate-950"><div className="mx-auto max-w-2xl">
       <Link href="/" className="text-sm font-bold text-slate-500">← Back to dashboard</Link>
       <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Local-only invoice</p>
-        <h1 className="mt-2 text-3xl font-black whitespace-nowrap">{invoice.invoiceNumber}</h1>
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Local-only invoice</p>
+            <h1 className="mt-2 max-w-full break-words text-base font-bold leading-tight tracking-tight sm:text-lg">{invoice.invoiceNumber}</h1>
+          </div>
+          <span
+            aria-label={getStatusBadge(invoice.status).ariaLabel}
+            className={`inline-flex min-h-7 shrink-0 items-center rounded-full border px-3 py-1 text-xs font-bold ${getStatusBadge(invoice.status).className}`}
+          >
+            {getStatusBadge(invoice.status).label}
+          </span>
+        </div>
         <p className="mt-6 text-lg font-black">{invoice.customerName}</p>
         <p className="mt-1 text-slate-500">{invoice.customerPhone || "No phone number"}</p>
         <div className="my-6 border-t border-slate-200" />
@@ -92,7 +133,7 @@ export default function LocalInvoiceDetails({ id }: { id: string }) {
             );
           })}
         </div>
-        <div className="mt-6 flex justify-between border-t border-slate-200 pt-4"><span className="font-bold">Total</span><span className="text-2xl font-black">{currency(invoice.total)}</span></div><p className="mt-4 text-sm font-bold uppercase text-slate-500">Status: {invoice.status}</p>
+        <div className="mt-6 flex justify-between border-t border-slate-200 pt-4"><span className="font-bold">Total</span><span className="text-2xl font-black">{currency(invoice.total)}</span></div>
       </section>
       <InvoicePaymentPanel invoiceNumber={invoice.invoiceNumber} total={invoice.total} outstandingAmount={invoice.outstandingAmount} dueDays={invoice.dueDays} />
       <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4"><h2 className="font-black">Payment history</h2>{invoice.paymentEvents.length === 0 ? <p className="mt-2 text-sm text-slate-500">No payments recorded.</p> : <div className="mt-3 space-y-3">{invoice.paymentEvents.map((payment) => <div key={payment.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex items-center justify-between gap-3"><span className="font-bold">Paid manually</span><span className="font-black">{currency(payment.amount)}</span></div><div className="mt-2 text-sm text-slate-600"><p>{payment.paymentMethod.toUpperCase()}</p><p className="mt-1">{payment.paymentReference || "No payment reference recorded"}</p><p className="mt-1">{payment.paymentDate}</p></div></div>)}</div>}<div className="mt-3 border-t border-slate-100 pt-3 text-sm"><p>Total paid: <strong>{currency(invoice.paidAmount)}</strong></p><p>Outstanding: <strong>{currency(invoice.outstandingAmount)}</strong></p></div></section>
