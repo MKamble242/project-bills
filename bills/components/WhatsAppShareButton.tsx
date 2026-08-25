@@ -49,7 +49,8 @@ export default function WhatsAppShareButton({
     const settings = readBusinessSettings();
     const storedLanguage = await readAppMetadata("whatsapp_message_language");
     const language: WhatsAppMessageLanguage = storedLanguage === "simple_hindi" || storedLanguage === "simple_marathi" || storedLanguage === "hinglish" ? storedLanguage : "simple_english";
-    const resolvedBusinessName = settings.businessName.trim() || businessName.trim();
+    const candidateBusinessName = settings.businessName.trim() || businessName.trim();
+    const resolvedBusinessName = ["your business name", "your store name", "business name here"].includes(candidateBusinessName.toLowerCase()) ? "" : candidateBusinessName;
     const normalizedPhone = normalizeIndianPhone(phone);
     const activeAmount = Number.isFinite(outstandingAmount) ? Math.max(0, outstandingAmount) : Math.max(0, total);
     const advanceAmount = Number.isFinite(advanceReceived) ? advanceReceived : 0;
@@ -75,9 +76,25 @@ export default function WhatsAppShareButton({
       })
       .join("\n");
 
-    const commonEnglish = `${documentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}: *${invoiceNumber}*\nDate: ${dateText}\n\nDear *${customerName || "Customer"}*,\n\nItems:\n${itemBreakdown}\n\nTotal: *${formatAmount(total)}*\n${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Amount paid: *${formatAmount(totalPaid)}*\nBalance due: *${formatAmount(activeAmount)}*${upiId ? `\n\nYou can pay using any UPI app.\nUPI ID: \`${upiId}\`` : ""}${resolvedBusinessName ? `\n\n${resolvedBusinessName}` : ""}`;
-    const commonHindi = `${documentType === "tax_invoice" ? "टैक्स इनवॉइस" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nविवरण:\n${itemBreakdown}\n\nकुल: *${formatAmount(total)}*\n${advanceAmount > 0 ? `एडवांस प्राप्त: *${formatAmount(advanceAmount)}*\n` : ""}भुगतान प्राप्त: *${formatAmount(totalPaid)}*\nबकाया राशि: *${formatAmount(activeAmount)}*${upiId ? `\n\nआप किसी भी UPI ऐप से भुगतान कर सकते हैं।\nUPI ID: \`${upiId}\`` : ""}${resolvedBusinessName ? `\n\n${resolvedBusinessName}` : ""}`;
-    const commonMarathi = `${documentType === "tax_invoice" ? "कर बिल" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nतपशील:\n${itemBreakdown}\n\nएकूण: *${formatAmount(total)}*\n${advanceAmount > 0 ? `आगाऊ मिळाले: *${formatAmount(advanceAmount)}*\n` : ""}मिळालेले पेमेंट: *${formatAmount(totalPaid)}*\nदेय बाकी: *${formatAmount(activeAmount)}*${upiId ? `\n\nआपण कोणत्याही UPI अॅपमधून पेमेंट करू शकता।\nUPI ID: \`${upiId}\`` : ""}${resolvedBusinessName ? `\n\n${resolvedBusinessName}` : ""}`;
+    const paymentDetails = upiId && activeAmount > 0
+      ? {
+          simple_english: `\n\nYou can pay using any UPI app.\nUPI ID: \`${upiId}\`\nAfter payment, please share the payment screenshot.`,
+          simple_hindi: `\n\nआप किसी भी UPI ऐप से भुगतान कर सकते हैं।\nUPI ID: \`${upiId}\`\nभुगतान के बाद कृपया स्क्रीनशॉट भेज दें।`,
+          simple_marathi: `\n\nआपण कोणत्याही UPI अॅपमधून पेमेंट करू शकता।\nUPI ID: \`${upiId}\`\nपेमेंटनंतर कृपया स्क्रीनशॉट पाठवा.`,
+          hinglish: `\n\nYou can pay using any UPI app.\nUPI ID: \`${upiId}\`\nAfter payment, please share the payment screenshot.`,
+        }
+      : { simple_english: "", simple_hindi: "", simple_marathi: "", hinglish: "" };
+    const businessFooter = resolvedBusinessName
+      ? {
+          simple_english: `\n\nThank you,\n*${resolvedBusinessName}*`,
+          simple_hindi: `\n\nधन्यवाद,\n*${resolvedBusinessName}*`,
+          simple_marathi: `\n\nधन्यवाद,\n*${resolvedBusinessName}*`,
+          hinglish: `\n\nThank you,\n*${resolvedBusinessName}*`,
+        }
+      : { simple_english: "", simple_hindi: "", simple_marathi: "", hinglish: "" };
+    const commonEnglish = `${documentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}: *${invoiceNumber}*\nDate: ${dateText}\n\nDear *${customerName || "Customer"}*,\n\nItems:\n${itemBreakdown}\n\nTotal: *${formatAmount(total)}*\n${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Amount paid: *${formatAmount(totalPaid)}*\nBalance due: *${formatAmount(activeAmount)}*${paymentDetails.simple_english}${businessFooter.simple_english}`;
+    const commonHindi = `${documentType === "tax_invoice" ? "टैक्स इनवॉइस" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nविवरण:\n${itemBreakdown}\n\nकुल: *${formatAmount(total)}*\n${advanceAmount > 0 ? `एडवांस प्राप्त: *${formatAmount(advanceAmount)}*\n` : ""}भुगतान प्राप्त: *${formatAmount(totalPaid)}*\nबकाया राशि: *${formatAmount(activeAmount)}*${paymentDetails.simple_hindi}${businessFooter.simple_hindi}`;
+    const commonMarathi = `${documentType === "tax_invoice" ? "कर बिल" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nतपशील:\n${itemBreakdown}\n\nएकूण: *${formatAmount(total)}*\n${advanceAmount > 0 ? `आगाऊ मिळाले: *${formatAmount(advanceAmount)}*\n` : ""}मिळालेले पेमेंट: *${formatAmount(totalPaid)}*\nदेय बाकी: *${formatAmount(activeAmount)}*${paymentDetails.simple_marathi}${businessFooter.simple_marathi}`;
     const message = language === "simple_hindi" ? commonHindi : language === "simple_marathi" ? commonMarathi : commonEnglish;
 
     const fallbackUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
