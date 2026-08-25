@@ -80,7 +80,7 @@ export default function WhatsAppShareButton({
       ? {
           simple_english: `\n\nYou can pay using any UPI app.\nUPI ID: \`${upiId}\`\nAfter payment, please share the payment screenshot.`,
           simple_hindi: `\n\nआप किसी भी UPI ऐप से भुगतान कर सकते हैं।\nUPI ID: \`${upiId}\`\nभुगतान के बाद कृपया स्क्रीनशॉट भेज दें।`,
-          simple_marathi: `\n\nआपण कोणत्याही UPI अॅपमधून पेमेंट करू शकता।\nUPI ID: \`${upiId}\`\nपेमेंटनंतर कृपया स्क्रीनशॉट पाठवा.`,
+          simple_marathi: `\n\nतुम्ही कोणत्याही UPI अॅपमधून पैसे पाठवू शकता।\nUPI ID: \`${upiId}\`\n\n*पैसे पाठवल्यानंतर कृपया स्क्रीनशॉट पाठवा.*`,
           hinglish: `\n\nYou can pay using any UPI app.\nUPI ID: \`${upiId}\`\nAfter payment, please share the payment screenshot.`,
         }
       : { simple_english: "", simple_hindi: "", simple_marathi: "", hinglish: "" };
