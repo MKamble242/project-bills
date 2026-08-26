@@ -53,7 +53,16 @@ export default function SettingsPage() {
 
   useEffect(() => {
     void readAppMetadata("whatsapp_message_language").then((value) => {
-      if (value === "hinglish" || value === "simple_english" || value === "simple_hindi" || value === "simple_marathi") setMessageLanguage(value);
+      const normalizedLanguage = value === "hinglish"
+        ? "simple_english"
+        : value === "simple_english" || value === "simple_hindi" || value === "simple_marathi"
+          ? value
+          : "simple_english";
+
+      setMessageLanguage(normalizedLanguage);
+      if (value === "hinglish") {
+        void writeAppMetadata("whatsapp_message_language", "simple_english");
+      }
     });
   }, []);
 
@@ -239,14 +248,14 @@ export default function SettingsPage() {
           <h2 className="text-xl font-black">{dictionary.whatsAppMessageLanguage}</h2>
           <p className="mt-2 text-sm text-slate-600">Choose the language used when sharing invoice messages on WhatsApp.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            {(["simple_english", "simple_hindi", "simple_marathi", "hinglish"] as const).map((language) => (
+            {(["simple_english", "simple_hindi", "simple_marathi"] as const).map((language) => (
               <button
                 key={language}
                 type="button"
                 onClick={() => { setMessageLanguage(language); void writeAppMetadata("whatsapp_message_language", language); }}
                 className={`rounded-xl border px-4 py-3 text-sm font-bold ${messageLanguage === language ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"}`}
               >
-                {language === "simple_english" ? "Simple English" : language === "simple_hindi" ? "Simple Hindi" : language === "simple_marathi" ? "Simple Marathi" : "Hinglish (legacy)"}
+                {language === "simple_english" ? "Simple English" : language === "simple_hindi" ? "Simple Hindi" : "Simple Marathi"}
               </button>
             ))}
           </div>
