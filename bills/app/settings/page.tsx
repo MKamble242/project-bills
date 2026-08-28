@@ -19,11 +19,14 @@ import {
 } from "@/lib/invoices/local-repository";
 import { readAppMetadata, writeAppMetadata } from "@/lib/invoices/local-repository";
 import type { WhatsAppMessageLanguage } from "@/types/invoice";
+import { useProfession } from "@/components/ProfessionGate";
+import { professionOptions } from "@/lib/profession";
 
 type Preview = { backup: LocalBackup; invalidRecords: number };
 
 export default function SettingsPage() {
   const { language, dictionary, setLanguage } = useAppLanguage();
+  const { profile, setProfile } = useProfession();
   const [settings, setSettings] = useState<BusinessSettings>(() => readBusinessSettings());
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -163,6 +166,24 @@ export default function SettingsPage() {
 
         <h1 className="mt-8 text-4xl font-black">{dictionary.appPreferences}</h1>
         <p className="mt-2 text-slate-600">{dictionary.settingsStored}</p>
+
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-black">Change my work type</h2>
+          <p className="mt-2 text-sm text-slate-600">Current setup: <strong>{profile?.professionName}</strong></p>
+          <div className="mt-4 space-y-3">
+            {professionOptions.map((option) => (
+              <button
+                key={option.professionGroup}
+                type="button"
+                onClick={() => setProfile(option)}
+                className={`flex min-h-[52px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-left ${profile?.professionGroup === option.professionGroup ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-200 bg-white text-slate-700"}`}
+              >
+                <span className="font-bold">{option.professionName}</span>
+                {profile?.professionGroup === option.professionGroup && <span aria-hidden="true">✓</span>}
+              </button>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">{dictionary.appLanguage}</h2>

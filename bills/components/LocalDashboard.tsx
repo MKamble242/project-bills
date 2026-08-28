@@ -16,6 +16,7 @@ import { downloadText } from "@/lib/invoices/backup";
 import type { Invoice, PaymentEvent } from "@/types/invoice";
 import OnlineStatus from "@/components/OnlineStatus";
 import { useAppLanguage } from "@/components/AppLanguageProvider";
+import { useProfession } from "@/components/ProfessionGate";
 
 function currency(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -71,6 +72,7 @@ function formatBackupDate(dateString: string) {
 
 export default function LocalDashboard() {
   const { dictionary } = useAppLanguage();
+  const { profile } = useProfession();
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -221,18 +223,20 @@ export default function LocalDashboard() {
   return (
     <main className="min-h-screen bg-[#f5f7fb] text-slate-950">
       <div className="mx-auto min-h-screen max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between py-3">
+        <nav className="flex flex-wrap items-center justify-between gap-3 py-3">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-slate-950/20">B</div>
             <div><p className="text-sm font-black tracking-[0.2em]">BILLS</p><p className="text-xs text-slate-500">Invoice less. Earn more.</p></div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <OnlineStatus />
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">{dictionary.navSettings}</Link>
             <Link href="/customers" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">{dictionary.navCustomers}</Link>
             <Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">{dictionary.createBill}</Link>
           </div>
         </nav>
+
+        <p className="mt-3 text-sm font-semibold text-slate-500">Your setup: <span className="text-slate-900">{profile?.professionName}</span></p>
 
         <section className="relative mt-5 overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-8 text-white shadow-2xl shadow-slate-900/20 sm:px-10 sm:py-12">
           <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />

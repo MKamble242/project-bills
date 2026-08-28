@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppLanguageProvider } from "@/components/AppLanguageProvider";
+import ProfessionGate from "@/components/ProfessionGate";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
@@ -29,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-full flex flex-col">
         <AppLanguageProvider>
           <ServiceWorkerRegistration />
-          {children}
+          <ProfessionGate>{children}</ProfessionGate>
         </AppLanguageProvider>
       </body>
     </html>
