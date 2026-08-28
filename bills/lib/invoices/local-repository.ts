@@ -1,4 +1,5 @@
 import type { BusinessProfile, Customer, Invoice, InvoiceDraft, InvoiceItem, PaymentEvent, SyncStatus } from "@/types/invoice";
+import { readShopEntries, shopEntriesStorageKey, validateShopEntry, type ShopEntry } from "@/lib/shop-entries";
 import { calculateItemTotals } from "./calculations";
 
 const databaseName = "project-bills";
@@ -200,6 +201,7 @@ export type LocalBackup = {
   invoices: Invoice[];
   invoiceItems: InvoiceItem[];
   paymentEvents: PaymentEvent[];
+  shopEntries: ShopEntry[];
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null; }
@@ -214,10 +216,11 @@ export function validateLocalBackup(input: unknown): { backup: LocalBackup; inva
   const invoices = input.invoices.filter(isInvoice).map(normalizeInvoice);
   const paymentEvents = input.paymentEvents.filter(isPayment);
   const invoiceItems = (Array.isArray(input.invoiceItems) ? input.invoiceItems : invoices.flatMap((invoice) => invoice.items)).filter(isItem);
+  const shopEntries = (Array.isArray(input.shopEntries) ? input.shopEntries : []).map(validateShopEntry).filter((entry): entry is ShopEntry => entry !== null);
   const profile = input.profile === null || input.profile === undefined ? null : isRecord(input.profile) && typeof input.profile.businessName === "string" ? input.profile as BusinessProfile : null;
-  const invalidRecords = input.customers.length - customers.length + input.invoices.length - invoices.length + input.paymentEvents.length - paymentEvents.length + (Array.isArray(input.invoiceItems) ? input.invoiceItems.length - invoiceItems.length : 0);
+  const invalidRecords = input.customers.length - customers.length + input.invoices.length - invoices.length + input.paymentEvents.length - paymentEvents.length + (Array.isArray(input.invoiceItems) ? input.invoiceItems.length - invoiceItems.length : 0) + (Array.isArray(input.shopEntries) ? input.shopEntries.length - shopEntries.length : 0);
   if (invoices.length === 0 && input.invoices.length > 0) throw new Error("The backup contains no valid invoices.");
-  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profile, customers, invoices, invoiceItems, paymentEvents }, invalidRecords };
+  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profile, customers, invoices, invoiceItems, paymentEvents, shopEntries }, invalidRecords };
 }
 
 export async function createLocalBackup(): Promise<LocalBackup> {
@@ -233,10 +236,11 @@ export async function createLocalBackup(): Promise<LocalBackup> {
   const normalizedInvoices = (invoices as Invoice[]).map(normalizeInvoice);
   const invoiceItems: InvoiceItem[] = [];
   normalizedInvoices.forEach((invoice) => (invoice.items || []).forEach((item) => { if (item) invoiceItems.push({ ...item, lineTotal: Math.round(item.quantity * item.unitPrice * 100) / 100 }); }));
-  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[] };
+  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries() };
 }
 
 export async function importLocalBackup(backup: LocalBackup, options: { replaceProfile: boolean } = { replaceProfile: false }) {
+  const shopEntries = (Array.isArray(backup.shopEntries) ? backup.shopEntries : []).map(validateShopEntry).filter((entry): entry is ShopEntry => entry !== null);
   const database = await openDatabase();
   const transaction = database.transaction(["profiles", "customers", "invoices", "payment_events"], "readwrite");
   const profiles = transaction.objectStore("profiles");
@@ -256,5 +260,6 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   if (options.replaceProfile && backup.profile) profiles.put(backup.profile);
   await transactionComplete(transaction);
   database.close();
+  window.localStorage.setItem(shopEntriesStorageKey, JSON.stringify(shopEntries));
   return { imported, skipped, profileReplaced: options.replaceProfile && Boolean(backup.profile) };
 }

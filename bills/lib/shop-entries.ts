@@ -20,10 +20,10 @@ function isExpenseReason(value: unknown): value is NonNullable<ShopEntry["expens
   return value === "Stock" || value === "Dukaan ka Rent" || value === "Light Bill" || value === "Transport" || value === "Helper" || value === "Other";
 }
 
-function validateEntry(value: unknown): ShopEntry | null {
+export function validateShopEntry(value: unknown): ShopEntry | null {
   if (typeof value !== "object" || value === null) return null;
   const candidate = value as Record<string, unknown>;
-  if (typeof candidate.id !== "string" || !isEntryType(candidate.type) || typeof candidate.amountPaise !== "number" || !Number.isInteger(candidate.amountPaise) || candidate.amountPaise <= 0 || typeof candidate.note !== "string" || typeof candidate.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(candidate.date) || typeof candidate.createdAt !== "string") return null;
+  if (typeof candidate.id !== "string" || !/^shop_[A-Za-z0-9_-]+$/.test(candidate.id) || !isEntryType(candidate.type) || typeof candidate.amountPaise !== "number" || !Number.isSafeInteger(candidate.amountPaise) || candidate.amountPaise <= 0 || typeof candidate.note !== "string" || typeof candidate.date !== "string" || !isValidShopDate(candidate.date) || typeof candidate.createdAt !== "string") return null;
   const validatedReason = candidate.type === "expense" && isExpenseReason(candidate.expenseReason) ? candidate.expenseReason : undefined;
   if (candidate.type === "expense" && !validatedReason) return null;
   return {
@@ -37,13 +37,20 @@ function validateEntry(value: unknown): ShopEntry | null {
   };
 }
 
+function isValidShopDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
 export function readShopEntries(): ShopEntry[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(shopEntriesStorageKey);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(validateEntry).filter((entry): entry is ShopEntry => entry !== null) : [];
+    return Array.isArray(parsed) ? parsed.map(validateShopEntry).filter((entry): entry is ShopEntry => entry !== null) : [];
   } catch {
     return [];
   }
