@@ -17,6 +17,7 @@ import type { Invoice, PaymentEvent } from "@/types/invoice";
 import OnlineStatus from "@/components/OnlineStatus";
 import { useAppLanguage } from "@/components/AppLanguageProvider";
 import { useProfession } from "@/components/ProfessionGate";
+import ShopDashboard from "@/components/ShopDashboard";
 
 function currency(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -71,6 +72,11 @@ function formatBackupDate(dateString: string) {
 }
 
 export default function LocalDashboard() {
+  const { profile } = useProfession();
+  return profile?.professionGroup === "shop" ? <ShopDashboard /> : <GeneralLocalDashboard />;
+}
+
+function GeneralLocalDashboard() {
   const { dictionary } = useAppLanguage();
   const { profile } = useProfession();
   const router = useRouter();
