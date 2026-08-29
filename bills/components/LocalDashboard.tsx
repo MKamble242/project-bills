@@ -18,6 +18,7 @@ import OnlineStatus from "@/components/OnlineStatus";
 import { useAppLanguage } from "@/components/AppLanguageProvider";
 import { useProfession } from "@/components/ProfessionGate";
 import ShopDashboard from "@/components/ShopDashboard";
+import JobDashboard from "@/components/JobDashboard";
 
 function currency(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -73,7 +74,9 @@ function formatBackupDate(dateString: string) {
 
 export default function LocalDashboard() {
   const { profile } = useProfession();
-  return profile?.professionGroup === "shop" ? <ShopDashboard /> : <GeneralLocalDashboard />;
+  if (profile?.professionGroup === "shop") return <ShopDashboard />;
+  if (profile?.professionGroup === "job") return <JobDashboard />;
+  return <GeneralLocalDashboard />;
 }
 
 function GeneralLocalDashboard() {
