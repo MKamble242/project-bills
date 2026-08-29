@@ -12,16 +12,29 @@ function ensureStore(database: IDBDatabase, storeName: (typeof jobStores)[number
   }
 }
 
-function openDatabase(): Promise<IDBDatabase> {
+function openDatabaseAtVersion(version: number): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(databaseName, databaseVersion);
+    const request = indexedDB.open(databaseName, version);
     request.onupgradeneeded = () => {
       const database = request.result;
       jobStores.forEach((store) => ensureStore(database, store));
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const database = request.result;
+      const missingStores = jobStores.filter((store) => !database.objectStoreNames.contains(store));
+      if (missingStores.length > 0 && version < databaseVersion + 10) {
+        database.close();
+        void openDatabaseAtVersion(version + 1).then(resolve).catch(reject);
+        return;
+      }
+      resolve(database);
+    };
     request.onerror = () => reject(request.error || new Error("Could not open local job storage."));
   });
+}
+
+function openDatabase(): Promise<IDBDatabase> {
+  return openDatabaseAtVersion(databaseVersion);
 }
 
 function transactionComplete(transaction: IDBTransaction): Promise<void> {
