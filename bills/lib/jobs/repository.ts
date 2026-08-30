@@ -6,14 +6,35 @@ const jobStores = ["jobs", "job_expenses"] as const;
 
 type JobDraft = Pick<JobEntry, "customerName" | "title" | "totalAmountPaise" | "receivedAmountPaise">;
 
+function logJobStorageIssue(context: string, error: unknown, database?: IDBDatabase) {
+  if (process.env.NODE_ENV === "production") return;
+  const errorName = error instanceof Error ? error.name : "UnknownError";
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.error("[Job storage diagnostic]", {
+    context,
+    errorName,
+    errorMessage,
+    databaseName,
+    expectedVersion: databaseVersion,
+    availableObjectStores: database ? Array.from(database.objectStoreNames) : [],
+  });
+}
+
 function ensureStore(database: IDBDatabase, storeName: (typeof jobStores)[number]): void {
   if (!database.objectStoreNames.contains(storeName)) {
     database.createObjectStore(storeName, { keyPath: "id" });
   }
 }
 
-function openDatabaseAtVersion(version: number): Promise<IDBDatabase> {
+function openDatabaseAtVersion(version: number, attempt = 0): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    if (typeof window === "undefined" || !("indexedDB" in window)) {
+      const error = new Error("IndexedDB is unavailable in this environment.");
+      logJobStorageIssue("indexedDB unavailable", error);
+      reject(error);
+      return;
+    }
+
     const request = indexedDB.open(databaseName, version);
     request.onupgradeneeded = () => {
       const database = request.result;
@@ -24,12 +45,36 @@ function openDatabaseAtVersion(version: number): Promise<IDBDatabase> {
       const missingStores = jobStores.filter((store) => !database.objectStoreNames.contains(store));
       if (missingStores.length > 0 && version < databaseVersion + 10) {
         database.close();
-        void openDatabaseAtVersion(version + 1).then(resolve).catch(reject);
+        if (attempt < 3) {
+          setTimeout(() => {
+            void openDatabaseAtVersion(version + 1, attempt + 1).then(resolve).catch(reject);
+          }, 100 * (attempt + 1));
+          return;
+        }
+        const upgradeError = new Error("The local job database is missing required stores.");
+        logJobStorageIssue("missing required object stores", upgradeError, database);
+        reject(upgradeError);
         return;
       }
       resolve(database);
     };
-    request.onerror = () => reject(request.error || new Error("Could not open local job storage."));
+    request.onerror = () => {
+      const error = request.error || new Error("Could not open local job storage.");
+      const shouldRetry = attempt < 3 && (
+        error.name === "InvalidStateError" ||
+        error.name === "NotFoundError" ||
+        /locked|upgrade|pending/i.test(error.message)
+      );
+      if (shouldRetry) {
+        logJobStorageIssue("retrying blocked job database open", error);
+        setTimeout(() => {
+          void openDatabaseAtVersion(version, attempt + 1).then(resolve).catch(reject);
+        }, 150 * (attempt + 1));
+        return;
+      }
+      logJobStorageIssue("job database open failed", error);
+      reject(error);
+    };
   });
 }
 

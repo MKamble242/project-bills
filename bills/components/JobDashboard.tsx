@@ -34,7 +34,15 @@ export default function JobDashboard() {
   async function loadJobs() {
     try {
       setJobs(await listLocalJobs());
-    } catch {
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[JobDashboard] job load failed", {
+          errorName: error instanceof Error ? error.name : "UnknownError",
+          errorMessage: error instanceof Error ? error.message : String(error),
+          databaseName: "project-bills",
+          expectedVersion: 4,
+        });
+      }
       setError("We could not load jobs stored on this device.");
     }
   }
