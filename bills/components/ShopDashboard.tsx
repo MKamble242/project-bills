@@ -93,7 +93,6 @@ export default function ShopDashboard() {
         </section>
 
         <section className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Summary label="Supplier ko Dena Hai" value={0} tone="slate" />
           <Summary label="Is Mahine ki Sale" value={monthSale} tone="blue" />
           <Summary label="Is Mahine ka Dukaan Kharcha" value={monthExpense} tone="amber" />
           <Summary label="Is Mahine Dukaan se Bacha" value={monthSale - monthExpense} tone="emerald" />
@@ -129,7 +128,7 @@ export default function ShopDashboard() {
   );
 }
 
-function Summary({ label, value, tone }: { label: string; value: number; tone: "blue" | "amber" | "emerald" | "slate" }) {
-  const styles = { blue: "bg-blue-50 text-blue-700", amber: "bg-amber-50 text-amber-700", emerald: "bg-emerald-50 text-emerald-700", slate: "bg-slate-100 text-slate-700" };
+function Summary({ label, value, tone }: { label: string; value: number; tone: "blue" | "amber" | "emerald" }) {
+  const styles = { blue: "bg-blue-50 text-blue-700", amber: "bg-amber-50 text-amber-700", emerald: "bg-emerald-50 text-emerald-700" };
   return <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-sm font-semibold text-slate-500">{label}</p><p className={`mt-2 inline-block rounded-lg px-2 py-1 text-2xl font-black ${styles[tone]}`}>{moneyFromPaise(value)}</p></div>;
 }

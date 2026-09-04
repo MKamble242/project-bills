@@ -33,3 +33,4 @@ Records are stored in this browser on this device. They are not synced to a serv
 
 - [USER_GUIDE.md](USER_GUIDE.md): short instructions for everyday use.
 - [CHANGELOG.md](CHANGELOG.md): recent product changes.
+- [ARCHITECTURE_NOTES.md](ARCHITECTURE_NOTES.md): how screens, storage, backups, and offline mode fit together.

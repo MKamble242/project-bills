@@ -9,3 +9,7 @@
 - Removed the unfinished supplier action from Meri Dukaan.
 - Added the core offline shell routes and refreshed the service worker cache.
 - Replaced starter project metadata and documentation with BILLS product information.
+- Removed the unused supplier balance placeholder from Meri Dukaan.
+- Added active and completed job views for faster daily work.
+- Made restore additive for shop, job, student, and fee records.
+- Added architecture notes for future maintenance.

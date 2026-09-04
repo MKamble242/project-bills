@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { addJobExpense, completeLocalJob, createLocalJob, listLocalJobs, recordJobPayment } from "@/lib/jobs/repository";
 import type { JobExpenseType, JobWithExpenses } from "@/types/job";
 
@@ -30,6 +30,11 @@ export default function JobDashboard() {
   const [expenseNote, setExpenseNote] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [jobView, setJobView] = useState<"active" | "completed">("active");
+
+  const visibleJobs = useMemo(() => jobs.filter((job) => job.status === jobView), [jobs, jobView]);
+  const activeCount = jobs.filter((job) => job.status === "active").length;
+  const completedCount = jobs.filter((job) => job.status === "completed").length;
 
   async function loadJobs() {
     try {
@@ -142,8 +147,13 @@ export default function JobDashboard() {
 
         {showCreate && <CreateJobForm customerName={customerName} setCustomerName={setCustomerName} title={title} setTitle={setTitle} totalAmount={totalAmount} setTotalAmount={setTotalAmount} receivedAmount={receivedAmount} setReceivedAmount={setReceivedAmount} onClose={() => setShowCreate(false)} onSubmit={saveJob} />}
 
-        <section className="mt-6 space-y-4">
-          {jobs.length === 0 ? <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><h2 className="text-lg font-black">No jobs yet</h2><p className="mt-2 text-sm text-slate-500">Create your first work entry to start tracking it.</p><button type="button" onClick={() => setShowCreate(true)} className="mt-6 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Create first job</button></div> : jobs.map((job) => <JobCard key={job.id} job={job} activeJobId={activeJobId} setActiveJobId={setActiveJobId} paymentAmount={paymentAmount} setPaymentAmount={setPaymentAmount} expenseType={expenseType} setExpenseType={setExpenseType} expenseAmount={expenseAmount} setExpenseAmount={setExpenseAmount} expenseNote={expenseNote} setExpenseNote={setExpenseNote} onPayment={savePayment} onExpense={saveExpense} onComplete={completeJob} />)}
+        <section className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm" aria-label="Job status">
+          <button type="button" onClick={() => setJobView("active")} className={`rounded-xl px-4 py-2 text-sm font-bold ${jobView === "active" ? "bg-blue-600 text-white" : "text-slate-600"}`}>Active ({activeCount})</button>
+          <button type="button" onClick={() => setJobView("completed")} className={`rounded-xl px-4 py-2 text-sm font-bold ${jobView === "completed" ? "bg-emerald-600 text-white" : "text-slate-600"}`}>Completed ({completedCount})</button>
+        </section>
+
+        <section className="mt-4 space-y-4">
+          {jobs.length === 0 ? <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><h2 className="text-lg font-black">No jobs yet</h2><p className="mt-2 text-sm text-slate-500">Create your first work entry to start tracking it.</p><button type="button" onClick={() => setShowCreate(true)} className="mt-6 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Create first job</button></div> : visibleJobs.length === 0 ? <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center"><h2 className="text-lg font-black">No {jobView} jobs</h2><p className="mt-2 text-sm text-slate-500">{jobView === "active" ? "New work will appear here." : "Completed work will appear here."}</p></div> : visibleJobs.map((job) => <JobCard key={job.id} job={job} activeJobId={activeJobId} setActiveJobId={setActiveJobId} paymentAmount={paymentAmount} setPaymentAmount={setPaymentAmount} expenseType={expenseType} setExpenseType={setExpenseType} expenseAmount={expenseAmount} setExpenseAmount={setExpenseAmount} expenseNote={expenseNote} setExpenseNote={setExpenseNote} onPayment={savePayment} onExpense={saveExpense} onComplete={completeJob} />)}
         </section>
       </div>
     </main>
