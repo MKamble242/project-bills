@@ -1,7 +1,7 @@
 import type { ClassFeeEntry, Student, StudentFeeSummary } from "@/types/class";
 
 const databaseName = "project-bills";
-const databaseVersion = 5;
+const databaseVersion = 6;
 const classStores = ["students", "class_fee_entries"] as const;
 
 function ensureStore(database: IDBDatabase, storeName: (typeof classStores)[number]): void {
@@ -208,6 +208,54 @@ export async function addClassFeePayment(entryId: string, amountPaise: number): 
   await transactionComplete(transaction);
   database.close();
   return updated;
+}
+
+export async function updateStudent(id: string, details: { name: string; guardianName: string; phone: string }): Promise<Student> {
+  const database = await openClassDatabase();
+  const transaction = database.transaction("students", "readwrite");
+  const current = validateStudent(await requestResult(transaction.objectStore("students").get(id)));
+  if (!current) throw new Error("This student could not be found.");
+  const updated = validateStudent({ ...current, ...details, updatedAt: new Date().toISOString() });
+  if (!updated) throw new Error("Please enter valid student details.");
+  transaction.objectStore("students").put(updated);
+  await transactionComplete(transaction);
+  database.close();
+  return updated;
+}
+
+export async function deleteStudent(id: string): Promise<void> {
+  const database = await openClassDatabase();
+  const transaction = database.transaction(["students", "class_fee_entries"], "readwrite");
+  const student = await requestResult(transaction.objectStore("students").get(id));
+  if (!validateStudent(student)) throw new Error("This student could not be found.");
+  transaction.objectStore("students").delete(id);
+  const entries = await requestResult(transaction.objectStore("class_fee_entries").getAll()) as ClassFeeEntry[];
+  entries.filter((entry) => entry.studentId === id).forEach((entry) => transaction.objectStore("class_fee_entries").delete(entry.id));
+  await transactionComplete(transaction);
+  database.close();
+}
+
+export async function updateClassFeeEntry(id: string, details: Pick<ClassFeeEntry, "expectedAmountPaise" | "paidAmountPaise" | "date" | "note">): Promise<ClassFeeEntry> {
+  const database = await openClassDatabase();
+  const transaction = database.transaction("class_fee_entries", "readwrite");
+  const current = validateClassFeeEntry(await requestResult(transaction.objectStore("class_fee_entries").get(id)));
+  if (!current) throw new Error("This fee record could not be found.");
+  const updated = validateClassFeeEntry({ ...current, ...details, updatedAt: new Date().toISOString() });
+  if (!updated) throw new Error("Please enter valid fee details.");
+  transaction.objectStore("class_fee_entries").put(updated);
+  await transactionComplete(transaction);
+  database.close();
+  return updated;
+}
+
+export async function deleteClassFeeEntry(id: string): Promise<void> {
+  const database = await openClassDatabase();
+  const transaction = database.transaction("class_fee_entries", "readwrite");
+  const current = await requestResult(transaction.objectStore("class_fee_entries").get(id));
+  if (!validateClassFeeEntry(current)) throw new Error("This fee record could not be found.");
+  transaction.objectStore("class_fee_entries").delete(id);
+  await transactionComplete(transaction);
+  database.close();
 }
 
 export async function listAllClassActivity(): Promise<{ students: Student[]; feeEntries: ClassFeeEntry[] }> {

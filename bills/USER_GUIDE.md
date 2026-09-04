@@ -23,3 +23,7 @@ Choose `Mera Hisaab`, then create a bill. Add the customer and one or more items
 ## Backup
 
 Open Settings and choose `Download full backup` regularly, especially before changing phones or clearing browser data. To restore, select a JSON backup, review it, and confirm the import. Existing records with the same IDs are kept.
+
+## Find and correct records
+
+Use `View all` when a recent list is long. Search by customer, student, invoice number, or note, and use the simple date or status filters. Shop entries, students, fees, jobs, expenses, payments, and invoices can be edited from their main screens. Delete actions always ask for confirmation.

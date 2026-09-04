@@ -243,6 +243,7 @@ function GeneralLocalDashboard() {
             <OnlineStatus />
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">{dictionary.navSettings}</Link>
             <Link href="/customers" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">{dictionary.navCustomers}</Link>
+            <Link href="/invoices" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">All bills</Link>
             <Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">{dictionary.createBill}</Link>
           </div>
         </nav>
@@ -295,6 +296,10 @@ function GeneralLocalDashboard() {
               </div>
             </div>
           </section>
+        )}
+
+        {invoices.length >= 10 && !lastBackupAt && (
+          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">You have 10 or more invoices on this device. Create a backup when you have a moment.</p>
         )}
 
         {loading ? <p className="mt-8 font-bold">Loading local invoices...</p> : <>

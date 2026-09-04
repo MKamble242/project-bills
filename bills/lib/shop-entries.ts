@@ -62,3 +62,18 @@ export function addShopEntry(entry: Omit<ShopEntry, "id" | "createdAt">): ShopEn
   window.localStorage.setItem(shopEntriesStorageKey, JSON.stringify(entries));
   return saved;
 }
+
+export function updateShopEntry(id: string, changes: Partial<Omit<ShopEntry, "id" | "createdAt">>): ShopEntry {
+  const current = readShopEntries().find((entry) => entry.id === id);
+  if (!current) throw new Error("This shop entry could not be found.");
+  const updated = validateShopEntry({ ...current, ...changes });
+  if (!updated) throw new Error("Please enter valid shop entry details.");
+  window.localStorage.setItem(shopEntriesStorageKey, JSON.stringify(readShopEntries().map((entry) => entry.id === id ? updated : entry)));
+  return updated;
+}
+
+export function deleteShopEntry(id: string): void {
+  const entries = readShopEntries();
+  if (!entries.some((entry) => entry.id === id)) throw new Error("This shop entry could not be found.");
+  window.localStorage.setItem(shopEntriesStorageKey, JSON.stringify(entries.filter((entry) => entry.id !== id)));
+}

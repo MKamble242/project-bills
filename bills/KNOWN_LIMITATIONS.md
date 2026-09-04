@@ -7,3 +7,5 @@
 - Tax invoices require a valid GSTIN in Settings.
 - The app supports the four current work types: Meri Dukaan, Mera Kaam, Meri Class, and Mera Hisaab.
 - Browser storage and installed PWA behavior depend on the browser and device.
+- Very large histories are kept in one scrolling list; there is no pagination yet.
+- Job payment and expense quick edits use a simple value prompt rather than a full editor.

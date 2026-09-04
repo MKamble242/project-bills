@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { addShopEntry, readShopEntries, type ShopEntry, type ShopEntryType } from "@/lib/shop-entries";
+import { addShopEntry, deleteShopEntry, readShopEntries, updateShopEntry, type ShopEntry, type ShopEntryType } from "@/lib/shop-entries";
 
 const expenseReasons: NonNullable<ShopEntry["expenseReason"]>[] = ["Stock", "Dukaan ka Rent", "Light Bill", "Transport", "Helper", "Other"];
 
@@ -24,6 +24,7 @@ function sumEntries(entries: ShopEntry[], type: ShopEntryType, dateMatches: (dat
 export default function ShopDashboard() {
   const [entries, setEntries] = useState<ShopEntry[]>(() => readShopEntries());
   const [entryType, setEntryType] = useState<ShopEntryType | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [expenseReason, setExpenseReason] = useState<NonNullable<ShopEntry["expenseReason"]>>("Stock");
@@ -39,10 +40,12 @@ export default function ShopDashboard() {
   const monthExpense = sumEntries(entries, "expense", (entryDate) => entryDate.startsWith(monthPrefix));
   const recentEntries = useMemo(() => [...entries].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).slice(0, 8), [entries]);
 
-  function openEntryForm(type: ShopEntryType) {
+  function openEntryForm(type: ShopEntryType, existing?: ShopEntry) {
     setEntryType(type);
-    setAmount("");
-    setNote("");
+    setEditingId(existing?.id || null);
+    setAmount(existing ? String(existing.amountPaise / 100) : "");
+    setNote(existing?.note || "");
+    if (existing?.expenseReason) setExpenseReason(existing.expenseReason);
     setDate(dateKey(new Date()));
     setError("");
     setMessage("");
@@ -60,10 +63,12 @@ export default function ShopDashboard() {
       setError("Enter a valid amount.");
       return;
     }
-    const saved = addShopEntry({ type: entryType || "sale", amountPaise, note: note.trim(), date, ...(entryType === "expense" ? { expenseReason } : {}) });
-    setEntries((current) => [...current, saved]);
+    const details = { type: entryType || "sale", amountPaise, note: note.trim(), date, ...(entryType === "expense" ? { expenseReason } : {}) };
+    const saved = editingId ? updateShopEntry(editingId, details) : addShopEntry(details);
+    setEntries((current) => editingId ? current.map((entry) => entry.id === saved.id ? saved : entry) : [...current, saved]);
     setEntryType(null);
-    setMessage(entryType === "sale" ? "Sale saved." : "Dukaan ka kharcha saved.");
+    setEditingId(null);
+    setMessage(editingId ? "Entry updated." : entryType === "sale" ? "Sale saved." : "Dukaan ka kharcha saved.");
   }
 
   return (
@@ -107,21 +112,21 @@ export default function ShopDashboard() {
 
         {entryType && (
           <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">New entry</p><h2 className="mt-1 text-2xl font-black">{entryType === "sale" ? "Sale Likho" : "Dukaan ka Kharcha"}</h2></div><button type="button" onClick={() => setEntryType(null)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600">Close</button></div>
+            <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{editingId ? "Edit entry" : "New entry"}</p><h2 className="mt-1 text-2xl font-black">{entryType === "sale" ? "Sale Likho" : "Dukaan ka Kharcha"}</h2></div><button type="button" onClick={() => { setEntryType(null); setEditingId(null); }} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-600">Close</button></div>
             <form onSubmit={saveEntry} className="mt-5 space-y-4">
               <label className="block text-sm font-bold">Amount<input required inputMode="decimal" type="number" min="0.01" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-lg font-bold" /></label>
               {entryType === "sale" ? <label className="block text-sm font-bold">Short note <span className="font-normal text-slate-500">(optional)</span><input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label> : <label className="block text-sm font-bold">Expense reason<select value={expenseReason} onChange={(event) => setExpenseReason(event.target.value as NonNullable<ShopEntry["expenseReason"]>)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3">{expenseReasons.map((reason) => <option key={reason}>{reason}</option>)}</select></label>}
               {entryType === "expense" && <label className="block text-sm font-bold">Short note <span className="font-normal text-slate-500">(optional)</span><input value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>}
               <label className="block text-sm font-bold">Date<input required type="date" value={date} onChange={(event) => setDate(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
               {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
-              <button type="submit" className="min-h-[52px] w-full rounded-xl bg-slate-950 px-4 py-3 font-black text-white">Save</button>
+              <button type="submit" className="min-h-[52px] w-full rounded-xl bg-slate-950 px-4 py-3 font-black text-white">{editingId ? "Save changes" : "Save"}</button>
             </form>
           </section>
         )}
 
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="text-xl font-black">Recent dukaan entries</h2>
-          {recentEntries.length === 0 ? <p className="mt-3 text-sm text-slate-500">No shop entries yet.</p> : <div className="mt-4 divide-y divide-slate-100">{recentEntries.map((entry) => <div key={entry.id} className="flex items-center justify-between gap-4 py-3"><div><p className="font-bold">{entry.type === "sale" ? "Sale" : entry.expenseReason}</p><p className="mt-1 text-sm text-slate-500">{entry.date}{entry.note ? ` · ${entry.note}` : ""}</p></div><p className={`font-black ${entry.type === "sale" ? "text-blue-700" : "text-amber-700"}`}>{entry.type === "sale" ? "+" : "-"}{moneyFromPaise(entry.amountPaise)}</p></div>)}</div>}
+          <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-black">Recent dukaan entries</h2><Link href="/shop" className="text-sm font-bold text-blue-700">View all</Link></div>
+          {recentEntries.length === 0 ? <p className="mt-3 text-sm text-slate-500">No shop entries yet. Add today&apos;s first sale or expense above.</p> : <div className="mt-4 divide-y divide-slate-100">{recentEntries.map((entry) => <div key={entry.id} className="flex flex-wrap items-center justify-between gap-4 py-3"><div><p className="font-bold">{entry.type === "sale" ? "Sale" : entry.expenseReason}</p><p className="mt-1 text-sm text-slate-500">{entry.date}{entry.note ? ` · ${entry.note}` : ""}</p></div><div className="flex items-center gap-3"><p className={`font-black ${entry.type === "sale" ? "text-blue-700" : "text-amber-700"}`}>{entry.type === "sale" ? "+" : "-"}{moneyFromPaise(entry.amountPaise)}</p><button type="button" onClick={() => openEntryForm(entry.type, entry)} className="text-xs font-bold text-blue-700">Edit</button><button type="button" onClick={() => { if (window.confirm("Delete this entry? This cannot be undone.")) { deleteShopEntry(entry.id); setEntries((current) => current.filter((item) => item.id !== entry.id)); setMessage("Entry deleted."); } }} className="text-xs font-bold text-red-700">Delete</button></div></div>)}</div>}
         </section>
       </div>
     </main>

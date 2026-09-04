@@ -33,6 +33,8 @@ export default function SettingsPage() {
   const [busy, setBusy] = useState(false);
   const [storageStatus, setStorageStatus] = useState<"checking" | "enabled" | "unsupported" | "failed">("checking");
   const [messageLanguage, setMessageLanguage] = useState<WhatsAppMessageLanguage>("simple_english");
+  const [lastBackupAt, setLastBackupAt] = useState<string | null>(null);
+  const [backupAgeDays, setBackupAgeDays] = useState<number | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,6 +49,13 @@ export default function SettingsPage() {
         setStorageStatus(persisted ? "enabled" : "failed");
       })
       .catch(() => setStorageStatus("failed"));
+  }, []);
+
+  useEffect(() => {
+    void readAppMetadata("last_backup_at").then((value) => {
+      if (typeof value === "string" && value) setLastBackupAt(value);
+      if (typeof value === "string" && value) setBackupAgeDays(Math.max(0, Math.floor((Date.now() - Date.parse(value)) / 86400000)));
+    });
   }, []);
 
   useEffect(() => {
@@ -100,6 +109,10 @@ export default function SettingsPage() {
         invoiceCsv(backup.invoices),
         "text/csv"
       );
+      const backupTimestamp = new Date().toISOString();
+      await writeAppMetadata("last_backup_at", backupTimestamp);
+      setLastBackupAt(backupTimestamp);
+      setBackupAgeDays(0);
       setMessage("Backup downloaded successfully.");
     } catch {
       setMessage("Could not create backup. Please try again.");
@@ -292,6 +305,9 @@ export default function SettingsPage() {
           <h2 className="text-xl font-black">{dictionary.backupAndData}</h2>
           <p className="mt-2 text-sm text-slate-600">
             Your invoices are stored on this device. Download a backup before changing phones or clearing browser data.
+          </p>
+          <p className="mt-2 text-sm font-semibold text-amber-800">
+            {lastBackupAt ? `Last backup: ${backupAgeDays ?? 0} days ago` : "No backup created yet"}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-3">

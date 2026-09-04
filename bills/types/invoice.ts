@@ -17,6 +17,7 @@ export type DocumentType = "simple_bill" | "tax_invoice";
 export type WhatsAppMessageLanguage = "simple_english" | "simple_hindi" | "simple_marathi";
 
 export type InvoiceDraft = {
+  editingInvoiceId?: string;
   documentType: DocumentType;
   customerName: string;
   customerPhone: string;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { addClassFeePayment, createClassFeeEntry, createStudent, listStudentsWithFees } from "@/lib/classes/repository";
+import { addClassFeePayment, createClassFeeEntry, createStudent, deleteClassFeeEntry, deleteStudent, listStudentsWithFees, updateClassFeeEntry, updateStudent } from "@/lib/classes/repository";
 import type { ClassFeeEntry, StudentFeeSummary } from "@/types/class";
 
 function money(amountPaise: number) {
@@ -32,6 +32,8 @@ export default function ClassDashboard() {
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [editingFeeId, setEditingFeeId] = useState<string | null>(null);
 
   const loadStudents = useCallback(async () => {
     try {
@@ -61,12 +63,13 @@ export default function ClassDashboard() {
     setError("");
     setMessage("");
     try {
-      const saved = await createStudent({ name: studentName, guardianName, phone });
+      const saved = editingStudentId ? await updateStudent(editingStudentId, { name: studentName, guardianName, phone }) : await createStudent({ name: studentName, guardianName, phone });
       setStudentName("");
       setGuardianName("");
       setPhone("");
       setSelectedStudentId(saved.id);
-      setMessage("Student added.");
+      setEditingStudentId(null);
+      setMessage(editingStudentId ? "Student updated." : "Student added.");
       await loadStudents();
     } catch (caught: unknown) {
       setError(caught instanceof Error ? caught.message : "Could not save student.");
@@ -82,18 +85,21 @@ export default function ClassDashboard() {
       return;
     }
     try {
-      await createClassFeeEntry({
+      const details = {
         studentId: selectedStudentId,
         expectedAmountPaise: toPaise(feeAmount),
         paidAmountPaise: toPaise(feePaidAmount),
         date: feeDate,
         note: feeNote,
-      });
+      };
+      if (editingFeeId) await updateClassFeeEntry(editingFeeId, details);
+      else await createClassFeeEntry(details);
       setFeeAmount("");
       setFeePaidAmount("");
       setFeeDate(dateKey(new Date()));
       setFeeNote("");
-      setMessage("Fee record saved.");
+      setEditingFeeId(null);
+      setMessage(editingFeeId ? "Fee record updated." : "Fee record saved.");
       await loadStudents();
     } catch (caught: unknown) {
       setError(caught instanceof Error ? caught.message : "Could not save fee record.");
@@ -124,6 +130,7 @@ export default function ClassDashboard() {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Settings</Link>
+            <Link href="/students" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">View all</Link>
           </div>
         </nav>
 
@@ -143,19 +150,19 @@ export default function ClassDashboard() {
 
         <section className="mt-6 grid gap-4 lg:grid-cols-2">
           <form onSubmit={saveStudent} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Add student</p>
-            <h2 className="mt-2 text-2xl font-black">Create a student</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{editingStudentId ? "Edit student" : "Add student"}</p>
+            <h2 className="mt-2 text-2xl font-black">{editingStudentId ? "Update student" : "Create a student"}</h2>
             <div className="mt-4 space-y-4">
               <label className="block text-sm font-bold">Student name<input required value={studentName} onChange={(event) => setStudentName(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
               <label className="block text-sm font-bold">Parent/guardian name<input value={guardianName} onChange={(event) => setGuardianName(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
               <label className="block text-sm font-bold">Phone number<input value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
-              <button type="submit" className="min-h-[52px] w-full rounded-xl bg-slate-950 px-4 py-3 font-black text-white">Save student</button>
+              <button type="submit" className="min-h-[52px] w-full rounded-xl bg-slate-950 px-4 py-3 font-black text-white">{editingStudentId ? "Save changes" : "Save student"}</button>
             </div>
           </form>
 
           <form onSubmit={saveFeeEntry} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Fee entry</p>
-            <h2 className="mt-2 text-2xl font-black">Record class fee</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{editingFeeId ? "Edit fee record" : "Fee entry"}</p>
+            <h2 className="mt-2 text-2xl font-black">{editingFeeId ? "Update class fee" : "Record class fee"}</h2>
             <div className="mt-4 space-y-4">
               <label className="block text-sm font-bold">Student<select required value={selectedStudentId} onChange={(event) => setSelectedStudentId(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3">
                 <option value="">Select a student</option>
@@ -167,7 +174,7 @@ export default function ClassDashboard() {
               </div>
               <label className="block text-sm font-bold">Date<input required type="date" value={feeDate} onChange={(event) => setFeeDate(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
               <label className="block text-sm font-bold">Note<input value={feeNote} onChange={(event) => setFeeNote(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
-              <button type="submit" className="min-h-[52px] w-full rounded-xl bg-blue-600 px-4 py-3 font-black text-white">Save fee entry</button>
+              <button type="submit" className="min-h-[52px] w-full rounded-xl bg-blue-600 px-4 py-3 font-black text-white">{editingFeeId ? "Save changes" : "Save fee entry"}</button>
             </div>
           </form>
         </section>
@@ -194,6 +201,11 @@ export default function ClassDashboard() {
                     </div>
                   </div>
 
+                  <div className="mt-3 flex gap-3">
+                    <button type="button" onClick={() => { setEditingStudentId(student.id); setStudentName(student.name); setGuardianName(student.guardianName); setPhone(student.phone); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="text-sm font-bold text-blue-700">Edit student</button>
+                    <button type="button" onClick={() => { if (window.confirm("Delete this student and all their fee records? This cannot be undone.")) { void deleteStudent(student.id).then(() => { setStudents((current) => current.filter((item) => item.id !== student.id)); setMessage("Student deleted."); }).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Could not delete student.")); } }} className="text-sm font-bold text-red-700">Delete student</button>
+                  </div>
+
                   {student.entries.length > 0 && (
                     <div className="mt-4 space-y-2">
                       {student.entries.map((entry) => (
@@ -213,6 +225,7 @@ export default function ClassDashboard() {
                           </div>
 
                           {activeEntryId !== entry.id ? (
+                            <div className="mt-2 flex gap-3">
                             <button
                               type="button"
                               onClick={() => setActiveEntryId(entry.id)}
@@ -220,6 +233,9 @@ export default function ClassDashboard() {
                             >
                               Add payment
                             </button>
+                            <button type="button" onClick={() => { setEditingFeeId(entry.id); setSelectedStudentId(student.id); setFeeAmount(String(entry.expectedAmountPaise / 100)); setFeePaidAmount(String(entry.paidAmountPaise / 100)); setFeeDate(entry.date); setFeeNote(entry.note); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-blue-700">Edit</button>
+                            <button type="button" onClick={() => { if (window.confirm("Delete this fee record? This cannot be undone.")) { void deleteClassFeeEntry(entry.id).then(() => { void loadStudents(); setMessage("Fee record deleted."); }).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Could not delete fee record.")); } }} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-red-700">Delete</button>
+                            </div>
                           ) : (
                             <form
                               onSubmit={(event) => {

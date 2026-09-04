@@ -16,6 +16,8 @@ Money is stored as integer paise for shop, job, and class records. Invoice calcu
 
 A JSON backup contains the business profile, profession, customers, invoices, invoice items, payments, shop entries, jobs, job expenses, students, and class fee entries. Imported records are validated and added only when their IDs are not already present. A restore asks for confirmation before writing data.
 
+Job payments are stored separately from the job summary so later payments can be edited or removed without losing the job itself.
+
 ## Offline behavior
 
 The service worker caches the app shell and core screens. Local records remain available without an internet connection. API routes and invoice detail URLs are allowed to use normal network behavior because local invoice details are loaded by the app itself.

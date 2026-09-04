@@ -25,8 +25,17 @@ export type JobExpense = {
   createdAt: string;
 };
 
+export type JobPayment = {
+  id: string;
+  jobId: string;
+  amountPaise: number;
+  date: string;
+  createdAt: string;
+};
+
 export type JobWithExpenses = JobEntry & {
   expenses: JobExpense[];
+  payments: JobPayment[];
   customerBalancePaise: number;
   totalJobExpensesPaise: number;
   netAmountPaise: number;

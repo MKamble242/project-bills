@@ -1,0 +1,19 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { listLocalInvoices } from "@/lib/invoices/local-repository";
+import type { Invoice } from "@/types/invoice";
+
+const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
+export default function InvoicesPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("date");
+  const [error, setError] = useState("");
+  useEffect(() => { void listLocalInvoices().then(setInvoices).catch(() => setError("We could not load invoices on this device. Please try again.")); }, []);
+  const visible = useMemo(() => invoices.filter((invoice) => `${invoice.customerName} ${invoice.invoiceNumber}`.toLowerCase().includes(query.trim().toLowerCase())).filter((invoice) => filter === "all" || filter === "paid" ? (filter === "all" || invoice.status === "paid") : invoice.status !== "paid").sort((left, right) => sort === "customer" ? left.customerName.localeCompare(right.customerName) : sort === "status" ? left.status.localeCompare(right.status) : right.createdAt.localeCompare(left.createdAt)), [invoices, query, filter, sort]);
+  return <main className="min-h-screen bg-[#f5f7fb] px-4 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><Link href="/" className="text-sm font-bold text-slate-500">← Back to dashboard</Link><div className="mt-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Invoice history</p><h1 className="mt-2 text-4xl font-black">All invoices</h1><p className="mt-2 text-slate-600">{invoices.length} saved on this device</p></div><Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white">New invoice</Link></div><div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto_auto]"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search customer or invoice number" className="rounded-2xl border border-slate-200 bg-white px-4 py-4 font-semibold" /><select value={filter} onChange={(event) => setFilter(event.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 font-bold"><option value="all">All invoices</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select><select value={sort} onChange={(event) => setSort(event.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 font-bold"><option value="date">Newest first</option><option value="customer">Customer name</option><option value="status">Status</option></select></div>{error && <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</p>}<section className="mt-8 space-y-3">{visible.length === 0 ? <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><h2 className="text-lg font-black">No matching invoices</h2><p className="mt-2 text-sm text-slate-500">Create a bill or try another search.</p></div> : visible.map((invoice) => <Link key={invoice.id} href={`/invoices/${invoice.id}`} className="block rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-black">{invoice.customerName}</p><p className="mt-1 text-sm text-slate-500">{invoice.invoiceNumber}</p></div><div className="text-right"><p className="font-black">{money(invoice.total)}</p><span className="text-xs font-bold uppercase text-slate-500">{invoice.status}</span></div></div></Link>)}</section></div></main>;
+}

@@ -1,15 +1,15 @@
 import type { BusinessProfile, Customer, Invoice, InvoiceDraft, InvoiceItem, PaymentEvent, SyncStatus } from "@/types/invoice";
 import { readShopEntries, shopEntriesStorageKey, validateShopEntry, type ShopEntry } from "@/lib/shop-entries";
 import { readRawLocalJobs, validateJobEntry, validateJobExpense } from "@/lib/jobs/repository";
-import type { JobEntry, JobExpense } from "@/types/job";
+import type { JobEntry, JobExpense, JobPayment } from "@/types/job";
 import type { ClassFeeEntry, Student } from "@/types/class";
 import { validateClassFeeEntry, validateStudent } from "@/lib/classes/repository";
 import { readDiaryProfile, validateDiaryProfile, writeDiaryProfile, type DiaryProfile } from "@/lib/profession";
 import { calculateItemTotals } from "./calculations";
 
 const databaseName = "project-bills";
-const databaseVersion = 5;
-const stores = ["invoices", "profiles", "customers", "payment_events", "sync_queue", "app_metadata", "jobs", "job_expenses", "students", "class_fee_entries"] as const;
+const databaseVersion = 6;
+const stores = ["invoices", "profiles", "customers", "payment_events", "sync_queue", "app_metadata", "jobs", "job_expenses", "job_payments", "students", "class_fee_entries"] as const;
 
 type MetadataValue = number | string | boolean;
 type Metadata = { key: string; value: MetadataValue };
@@ -171,6 +171,64 @@ export async function recordLocalPayment(id: string, details: Pick<PaymentEvent,
   return updated;
 }
 
+export async function updateLocalInvoice(id: string, draft: InvoiceDraft): Promise<Invoice> {
+  const current = await getLocalInvoice(id);
+  if (!current) throw new Error("This local invoice could not be found.");
+  const items = draft.items || current.items || [{ id: crypto.randomUUID(), description: current.description, quantity: current.quantity, unitPrice: current.price, gstRate: current.gstRate }];
+  const totals = calculateItemTotals(items);
+  if (!draft.customerName.trim() || items.length === 0 || items.some((item) => !item.description.trim() || item.quantity <= 0 || item.unitPrice < 0)) throw new Error("Please complete the customer and item details.");
+  const updated: Invoice = { ...current, ...draft, items, ...totals, description: items[0].description, quantity: items[0].quantity, price: items[0].unitPrice, gstRate: draft.documentType === "tax_invoice" ? draft.gstRate : 0, status: current.paidAmount >= totals.total ? "paid" : current.paidAmount > 0 ? "partially_paid" : "approved", outstandingAmount: Math.max(0, totals.total - current.paidAmount), updatedAt: new Date().toISOString(), version: current.version + 1 };
+  const database = await openDatabase();
+  const transaction = database.transaction("invoices", "readwrite");
+  transaction.objectStore("invoices").put(updated);
+  await transactionComplete(transaction);
+  database.close();
+  return updated;
+}
+
+export async function deleteLocalInvoice(id: string): Promise<void> {
+  const database = await openDatabase();
+  const transaction = database.transaction(["invoices", "payment_events", "sync_queue"], "readwrite");
+  if (!await requestResult(transaction.objectStore("invoices").get(id))) throw new Error("This local invoice could not be found.");
+  transaction.objectStore("invoices").delete(id);
+  const payments = await requestResult(transaction.objectStore("payment_events").getAll()) as PaymentEvent[];
+  payments.filter((payment) => payment.invoiceId === id).forEach((payment) => transaction.objectStore("payment_events").delete(payment.id));
+  await transactionComplete(transaction);
+  database.close();
+}
+
+export async function updateLocalPayment(id: string, details: Pick<PaymentEvent, "amount" | "paymentDate" | "paymentMethod" | "paymentReference" | "notes">): Promise<Invoice> {
+  const database = await openDatabase();
+  const transaction = database.transaction(["invoices", "payment_events"], "readwrite");
+  const payment = await requestResult(transaction.objectStore("payment_events").get(id)) as PaymentEvent | undefined;
+  if (!payment) throw new Error("This payment could not be found.");
+  const invoice = normalizeInvoice(await requestResult(transaction.objectStore("invoices").get(payment.invoiceId)) as Invoice);
+  const paidAmount = invoice.paidAmount - payment.amount + details.amount;
+  if (details.amount <= 0 || paidAmount > invoice.total) throw new Error("Payment cannot be more than the invoice total.");
+  const updatedPayment = { ...payment, ...details };
+  const updatedInvoice = { ...invoice, paymentEvents: invoice.paymentEvents.map((item) => item.id === id ? updatedPayment : item), paidAmount, outstandingAmount: Math.max(0, invoice.total - paidAmount), status: paidAmount >= invoice.total ? "paid" as const : "partially_paid" as const, updatedAt: new Date().toISOString(), version: invoice.version + 1 };
+  transaction.objectStore("payment_events").put(updatedPayment);
+  transaction.objectStore("invoices").put(updatedInvoice);
+  await transactionComplete(transaction);
+  database.close();
+  return updatedInvoice;
+}
+
+export async function deleteLocalPayment(id: string): Promise<Invoice> {
+  const database = await openDatabase();
+  const transaction = database.transaction(["invoices", "payment_events"], "readwrite");
+  const payment = await requestResult(transaction.objectStore("payment_events").get(id)) as PaymentEvent | undefined;
+  if (!payment) throw new Error("This payment could not be found.");
+  const invoice = normalizeInvoice(await requestResult(transaction.objectStore("invoices").get(payment.invoiceId)) as Invoice);
+  const paidAmount = Math.max(0, invoice.paidAmount - payment.amount);
+  const updatedInvoice = { ...invoice, paymentEvents: invoice.paymentEvents.filter((item) => item.id !== id), paidAmount, outstandingAmount: Math.max(0, invoice.total - paidAmount), status: paidAmount > 0 ? "partially_paid" as const : "approved" as const, updatedAt: new Date().toISOString(), version: invoice.version + 1 };
+  transaction.objectStore("payment_events").delete(id);
+  transaction.objectStore("invoices").put(updatedInvoice);
+  await transactionComplete(transaction);
+  database.close();
+  return updatedInvoice;
+}
+
 export async function readAppMetadata(key: string): Promise<MetadataValue | undefined> {
   const database = await openDatabase();
   const metadata = await requestResult(database.transaction("app_metadata", "readonly").objectStore("app_metadata").get(key)) as Metadata | undefined;
@@ -225,6 +283,7 @@ export type LocalBackup = {
   shopEntries: ShopEntry[];
   jobs: JobEntry[];
   jobExpenses: JobExpense[];
+  jobPayments: JobPayment[];
   students: Student[];
   classFeeEntries: ClassFeeEntry[];
 };
@@ -248,11 +307,12 @@ export function validateLocalBackup(input: unknown): { backup: LocalBackup; inva
   const students = (Array.isArray(input.students) ? input.students : []).map(validateStudent).filter((student): student is Student => student !== null);
   const studentIds = new Set(students.map((student) => student.id));
   const classFeeEntries = (Array.isArray(input.classFeeEntries) ? input.classFeeEntries : []).map(validateClassFeeEntry).filter((entry): entry is ClassFeeEntry => entry !== null && studentIds.has(entry.studentId));
+  const jobPayments = (Array.isArray(input.jobPayments) ? input.jobPayments : []).filter((payment) => isRecord(payment) && typeof payment.id === "string" && typeof payment.jobId === "string" && typeof payment.amountPaise === "number" && typeof payment.date === "string" && typeof payment.createdAt === "string") as JobPayment[];
   const profile = input.profile === null || input.profile === undefined ? null : isRecord(input.profile) && typeof input.profile.businessName === "string" ? input.profile as BusinessProfile : null;
   const profession = input.profession === null || input.profession === undefined ? null : validateDiaryProfile(input.profession);
   const invalidRecords = input.customers.length - customers.length + input.invoices.length - invoices.length + input.paymentEvents.length - paymentEvents.length + (Array.isArray(input.invoiceItems) ? input.invoiceItems.length - invoiceItems.length : 0) + (Array.isArray(input.shopEntries) ? input.shopEntries.length - shopEntries.length : 0) + (Array.isArray(input.jobs) ? input.jobs.length - jobs.length : 0) + (Array.isArray(input.jobExpenses) ? input.jobExpenses.length - jobExpenses.length : 0) + (Array.isArray(input.students) ? input.students.length - students.length : 0) + (Array.isArray(input.classFeeEntries) ? input.classFeeEntries.length - classFeeEntries.length : 0);
   if (invoices.length === 0 && input.invoices.length > 0) throw new Error("The backup contains no valid invoices.");
-  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profession, profile, customers, invoices, invoiceItems, paymentEvents, shopEntries, jobs, jobExpenses, students, classFeeEntries }, invalidRecords };
+  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profession, profile, customers, invoices, invoiceItems, paymentEvents, shopEntries, jobs, jobExpenses, jobPayments, students, classFeeEntries }, invalidRecords };
 }
 
 export async function createLocalBackup(): Promise<LocalBackup> {
@@ -268,7 +328,7 @@ export async function createLocalBackup(): Promise<LocalBackup> {
   const normalizedInvoices = (invoices as Invoice[]).map(normalizeInvoice);
   const invoiceItems: InvoiceItem[] = [];
   normalizedInvoices.forEach((invoice) => (invoice.items || []).forEach((item) => { if (item) invoiceItems.push({ ...item, lineTotal: Math.round(item.quantity * item.unitPrice * 100) / 100 }); }));
-  const { jobs, jobExpenses } = await readRawLocalJobs();
+  const { jobs, jobExpenses, jobPayments } = await readRawLocalJobs();
   const { students, feeEntries } = await (async () => {
     try {
       const { readRawStudents, readRawClassFeeEntries } = await import("@/lib/classes/repository");
@@ -278,7 +338,7 @@ export async function createLocalBackup(): Promise<LocalBackup> {
       return { students: [] as Student[], feeEntries: [] as ClassFeeEntry[] };
     }
   })();
-  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profession: readDiaryProfile(), profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries(), jobs, jobExpenses, students, classFeeEntries: feeEntries };
+  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profession: readDiaryProfile(), profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries(), jobs, jobExpenses, jobPayments, students, classFeeEntries: feeEntries };
 }
 
 export async function importLocalBackup(backup: LocalBackup, options: { replaceProfile: boolean } = { replaceProfile: false }) {
@@ -286,11 +346,12 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   const jobs = (Array.isArray(backup.jobs) ? backup.jobs : []).map(validateJobEntry).filter((job): job is JobEntry => job !== null);
   const jobIds = new Set(jobs.map((job) => job.id));
   const jobExpenses = (Array.isArray(backup.jobExpenses) ? backup.jobExpenses : []).map(validateJobExpense).filter((expense): expense is JobExpense => expense !== null && jobIds.has(expense.jobId));
+  const jobPayments = (Array.isArray(backup.jobPayments) ? backup.jobPayments : []).filter((payment) => isRecord(payment) && typeof payment.id === "string" && typeof payment.jobId === "string" && typeof payment.amountPaise === "number" && typeof payment.date === "string" && typeof payment.createdAt === "string") as JobPayment[];
   const students = (Array.isArray(backup.students) ? backup.students : []).map(validateStudent).filter((student): student is Student => student !== null);
   const studentIds = new Set(students.map((student) => student.id));
   const classFeeEntries = (Array.isArray(backup.classFeeEntries) ? backup.classFeeEntries : []).map(validateClassFeeEntry).filter((entry): entry is ClassFeeEntry => entry !== null && studentIds.has(entry.studentId));
   const database = await openDatabase();
-  const transaction = database.transaction(["profiles", "customers", "invoices", "payment_events", "jobs", "job_expenses", "students", "class_fee_entries"], "readwrite");
+  const transaction = database.transaction(["profiles", "customers", "invoices", "payment_events", "jobs", "job_expenses", "job_payments", "students", "class_fee_entries"], "readwrite");
   const profiles = transaction.objectStore("profiles");
   const existingInvoices = await requestResult(transaction.objectStore("invoices").getAll()) as Invoice[];
   const existingCustomers = await requestResult(transaction.objectStore("customers").getAll()) as Customer[];
@@ -298,6 +359,7 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   const existingJobs = await requestResult(transaction.objectStore("jobs").getAll()) as JobEntry[];
   const existingJobExpenses = await requestResult(transaction.objectStore("job_expenses").getAll()) as JobExpense[];
   const existingStudents = await requestResult(transaction.objectStore("students").getAll()) as Student[];
+  const existingJobPayments = await requestResult(transaction.objectStore("job_payments").getAll()) as JobPayment[];
   const existingClassFeeEntries = await requestResult(transaction.objectStore("class_fee_entries").getAll()) as ClassFeeEntry[];
   const invoiceIds = new Set(existingInvoices.map((invoice) => invoice.id));
   const invoiceNumbers = new Set(existingInvoices.map((invoice) => invoice.invoiceNumber));
@@ -306,11 +368,13 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   const jobIdsExisting = new Set(existingJobs.map((job) => job.id));
   const jobExpenseIdsExisting = new Set(existingJobExpenses.map((expense) => expense.id));
   const studentIdsExisting = new Set(existingStudents.map((student) => student.id));
+  const jobPaymentIdsExisting = new Set(existingJobPayments.map((payment) => payment.id));
   const classFeeEntryIdsExisting = new Set(existingClassFeeEntries.map((entry) => entry.id));
   const studentStore = transaction.objectStore("students");
   const classFeeEntryStore = transaction.objectStore("class_fee_entries");
   const jobStore = transaction.objectStore("jobs");
   const jobExpenseStore = transaction.objectStore("job_expenses");
+  const jobPaymentStore = transaction.objectStore("job_payments");
   let imported = 0;
   let skipped = 0;
   const importedInvoiceIds = new Set<string>();
@@ -320,6 +384,7 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   if (options.replaceProfile && backup.profile) profiles.put(backup.profile);
   jobs.forEach((job) => { if (jobIdsExisting.has(job.id)) skipped++; else { jobStore.add(job); jobIdsExisting.add(job.id); imported++; } });
   jobExpenses.forEach((expense) => { if (jobExpenseIdsExisting.has(expense.id)) skipped++; else { jobExpenseStore.add(expense); jobExpenseIdsExisting.add(expense.id); imported++; } });
+  jobPayments.forEach((payment) => { if (jobPaymentIdsExisting.has(payment.id) || !jobIdsExisting.has(payment.jobId)) skipped++; else { jobPaymentStore.add(payment); jobPaymentIdsExisting.add(payment.id); imported++; } });
   students.forEach((student) => { if (studentIdsExisting.has(student.id)) skipped++; else { studentStore.add(student); studentIdsExisting.add(student.id); imported++; } });
   classFeeEntries.forEach((entry) => { if (classFeeEntryIdsExisting.has(entry.id) || !studentIdsExisting.has(entry.studentId)) skipped++; else { classFeeEntryStore.add(entry); classFeeEntryIdsExisting.add(entry.id); imported++; } });
   await transactionComplete(transaction);

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { getLocalInvoice } from "@/lib/invoices/local-repository";
+import { useRouter } from "next/navigation";
+import { deleteLocalInvoice, deleteLocalPayment, getLocalInvoice, updateLocalPayment } from "@/lib/invoices/local-repository";
+import { writeInvoiceDraft } from "@/lib/invoices/draft-storage";
 import type { Invoice } from "@/types/invoice";
 import DownloadInvoiceButton from "@/components/DownloadInvoiceButton";
 import PrintInvoiceButton from "@/components/PrintInvoiceButton";
@@ -52,9 +54,11 @@ function getStatusBadge(status: string) {
 
 export default function LocalInvoiceDetails({ id }: { id: string }) {
   const { dictionary } = useAppLanguage();
+  const router = useRouter();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     void getLocalInvoice(id)
@@ -138,9 +142,11 @@ export default function LocalInvoiceDetails({ id }: { id: string }) {
         </div>
         <div className="mt-6 flex justify-between border-t border-slate-200 pt-4"><span className="font-bold">{dictionary.grandTotal}</span><span className="text-2xl font-black">{currency(invoice.total)}</span></div>
       </section>
+      {message && <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">{message}</p>}
       <InvoicePaymentPanel invoiceNumber={invoice.invoiceNumber} total={invoice.total} outstandingAmount={invoice.outstandingAmount} dueDays={invoice.dueDays} />
-      <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4"><h2 className="font-black">{dictionary.paymentHistory}</h2>{invoice.paymentEvents.length === 0 ? <p className="mt-2 text-sm text-slate-500">{dictionary.noPayments}</p> : <div className="mt-3 space-y-3">{invoice.paymentEvents.map((payment) => <div key={payment.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex items-center justify-between gap-3"><span className="font-bold">{dictionary.paid}</span><span className="font-black">{currency(payment.amount)}</span></div><div className="mt-2 text-sm text-slate-600"><p>{payment.paymentMethod.toUpperCase()}</p><p className="mt-1">{payment.paymentReference || "No payment reference recorded"}</p><p className="mt-1">{payment.paymentDate}</p></div></div>)}</div>}<div className="mt-3 border-t border-slate-100 pt-3 text-sm"><p>{dictionary.totalPaid}: <strong>{currency(invoice.paidAmount)}</strong></p><p>{dictionary.outstanding}: <strong>{currency(invoice.outstandingAmount)}</strong></p></div></section>
+      <section className="mt-4 rounded-2xl border border-slate-200 bg-white p-4"><h2 className="font-black">{dictionary.paymentHistory}</h2>{invoice.paymentEvents.length === 0 ? <p className="mt-2 text-sm text-slate-500">{dictionary.noPayments}</p> : <div className="mt-3 space-y-3">{invoice.paymentEvents.map((payment) => <div key={payment.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex items-center justify-between gap-3"><span className="font-bold">{dictionary.paid}</span><span className="font-black">{currency(payment.amount)}</span></div><div className="mt-2 text-sm text-slate-600"><p>{payment.paymentMethod.toUpperCase()}</p><p className="mt-1">{payment.paymentReference || "No payment reference recorded"}</p><p className="mt-1">{payment.paymentDate}</p></div><div className="mt-3 flex gap-3"><button type="button" onClick={() => { const amount = window.prompt("Payment amount", String(payment.amount)); if (amount === null) return; void updateLocalPayment(payment.id, { ...payment, amount: Number(amount) }).then(setInvoice).then(() => setMessage("Payment updated.")).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Could not update payment.")); }} className="text-xs font-bold text-blue-700">Edit</button><button type="button" onClick={() => { if (!window.confirm("Delete this payment? The outstanding amount will increase.")) return; void deleteLocalPayment(payment.id).then(setInvoice).then(() => setMessage("Payment deleted.")).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Could not delete payment.")); }} className="text-xs font-bold text-red-700">Delete</button></div></div>)}</div>}<div className="mt-3 border-t border-slate-100 pt-3 text-sm"><p>{dictionary.totalPaid}: <strong>{currency(invoice.paidAmount)}</strong></p><p>{dictionary.outstanding}: <strong>{currency(invoice.outstandingAmount)}</strong></p></div></section>
       <div className="mt-6 space-y-3">
+        <div className="grid grid-cols-2 gap-3"><button type="button" onClick={() => { writeInvoiceDraft({ editingInvoiceId: invoice.id, documentType: invoice.documentType, customerName: invoice.customerName, customerPhone: invoice.customerPhone, customerAddress: invoice.customerAddress, invoiceDate: invoice.invoiceDate, dueDate: invoice.dueDate, description: invoice.description, quantity: invoice.quantity, price: invoice.price, gstRate: invoice.gstRate, dueDays: invoice.dueDays, notes: invoice.notes, confidenceNotes: [], items: invoice.items }); router.push("/invoices/new"); }} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-blue-700">Edit invoice</button><button type="button" onClick={() => { if (!window.confirm("Delete this invoice and its payment history? This cannot be undone.")) return; void deleteLocalInvoice(invoice.id).then(() => router.push("/")).catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Could not delete invoice.")); }} className="rounded-xl border border-red-200 px-4 py-3 text-sm font-bold text-red-700">Delete invoice</button></div>
         <WhatsAppShareButton
           phone={invoice.customerPhone || null}
           customerName={invoice.customerName}

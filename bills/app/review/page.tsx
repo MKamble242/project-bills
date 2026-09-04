@@ -8,7 +8,7 @@ import {
   readInvoiceDraft,
   type InvoiceDraft,
 } from "@/lib/invoices/draft-storage";
-import { createLocalInvoice } from "@/lib/invoices/local-repository";
+import { createLocalInvoice, updateLocalInvoice } from "@/lib/invoices/local-repository";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { calculateItemTotals } from "@/lib/invoices/calculations";
 import { readBusinessSettings } from "@/lib/business-settings";
@@ -94,7 +94,7 @@ function ReviewInvoiceContent() {
 
     try {
       if (!isSupabaseConfigured()) {
-        const localInvoice = await createLocalInvoice(draft);
+        const localInvoice = draft.editingInvoiceId ? await updateLocalInvoice(draft.editingInvoiceId, draft) : await createLocalInvoice(draft);
         setSavedInvoiceId(localInvoice.id);
         setSavedInvoiceNumber(localInvoice.invoiceNumber);
         setSaving(false);

@@ -43,6 +43,7 @@ function InvoiceForm() {
   const [notes, setNotes] = useState("");
   const [advanceError, setAdvanceError] = useState("");
   const [hasGstin, setHasGstin] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -65,6 +66,7 @@ function InvoiceForm() {
   useEffect(() => {
     if (!hydrated || resumeDraft) return;
     const draft: InvoiceDraft = {
+      editingInvoiceId,
       documentType,
       customerName,
       customerPhone,
@@ -84,12 +86,13 @@ function InvoiceForm() {
     };
     const timer = window.setTimeout(() => writeInvoiceDraft(draft), 500);
     return () => window.clearTimeout(timer);
-  }, [hydrated, resumeDraft, documentType, customerName, customerPhone, customerAddress, invoiceDate, dueDate, items, gstRate, dueDays, advanceReceived, advancePaymentMethod, notes]);
+  }, [hydrated, resumeDraft, editingInvoiceId, documentType, customerName, customerPhone, customerAddress, invoiceDate, dueDate, items, gstRate, dueDays, advanceReceived, advancePaymentMethod, notes]);
 
   function continueDraft() {
     if (!resumeDraft) return;
     const draft = resumeDraft;
     setDocumentType(draft.documentType || "simple_bill");
+    setEditingInvoiceId(draft.editingInvoiceId);
     setCustomerName(draft.customerName);
     setCustomerPhone(draft.customerPhone);
     setCustomerAddress(draft.customerAddress || "");
@@ -107,6 +110,7 @@ function InvoiceForm() {
   function startNew() {
     clearInvoiceDraft();
     setResumeDraft(null);
+    setEditingInvoiceId(undefined);
     setItems([newItem(0)]);
   }
 
@@ -138,6 +142,7 @@ function InvoiceForm() {
 
     const firstItem = items[0];
     const invoiceData: InvoiceDraft = {
+      editingInvoiceId,
       documentType,
       customerName: customerName.trim(),
       customerPhone: customerPhone.trim(),
