@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+BILLS is a local-first, mobile-friendly money diary for Indian micro-business owners.
 
-## Getting Started
+## What it does
 
-First, run the development server:
+- Meri Dukaan: record sales, expenses, and today's remaining amount.
+- Mera Kaam: track jobs, customer payments, job expenses, balance, and net amount.
+- Meri Class: track students, expected fees, payments, and pending fees.
+- Mera Hisaab: create invoices, record payments, share bills, and view customer history.
+- Settings: save business details and download or restore a complete backup.
+
+## Run locally
+
+From this directory:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`. No login is required. Production checks are:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data and privacy
 
-## Learn More
+Records are stored in this browser on this device. They are not synced to a server in local mode. Download a backup before changing phones, clearing browser data, or reinstalling the browser. See [PRIVACY_NOTES.md](PRIVACY_NOTES.md) and [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md).
 
-To learn more about Next.js, take a look at the following resources:
+## Release documents
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [USER_GUIDE.md](USER_GUIDE.md): short instructions for everyday use.
+- [CHANGELOG.md](CHANGELOG.md): recent product changes.

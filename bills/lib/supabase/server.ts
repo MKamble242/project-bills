@@ -14,9 +14,7 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll() {
-          // Authentication cookies will be added later.
-        },
+        setAll() {},
       },
     }
   );

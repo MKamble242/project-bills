@@ -11,13 +11,13 @@ export type ProfessionOption = DiaryProfile & { explanation: string };
 export const professionStorageKey = "project-bills.diary-profile.v1";
 
 export const professionOptions: ProfessionOption[] = [
-  { professionGroup: "shop", professionName: "Meri Dukaan", personalSectionEnabled: false, explanation: "Sale, stock and supplier records" },
+  { professionGroup: "shop", professionName: "Meri Dukaan", personalSectionEnabled: false, explanation: "Sale and expense records" },
   { professionGroup: "job", professionName: "Mera Kaam", personalSectionEnabled: false, explanation: "Jobs, materials and payments" },
-  { professionGroup: "fees", professionName: "Meri Class", personalSectionEnabled: false, explanation: "Students, fees and class expenses" },
-  { professionGroup: "general", professionName: "Mera Hisaab", personalSectionEnabled: false, explanation: "Simple income and expense records" },
+  { professionGroup: "fees", professionName: "Meri Class", personalSectionEnabled: false, explanation: "Students and fee records" },
+  { professionGroup: "general", professionName: "Mera Hisaab", personalSectionEnabled: false, explanation: "Invoices and payment records" },
 ];
 
-export const generalDiaryProfile: DiaryProfile = professionOptions[4];
+export const generalDiaryProfile: DiaryProfile = professionOptions.find((option) => option.professionGroup === "general")!;
 
 function isProfessionGroup(value: unknown): value is ProfessionGroup {
   return value === "shop" || value === "job" || value === "fees" || value === "general";
