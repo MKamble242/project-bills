@@ -1,4 +1,4 @@
-export type ProfessionGroup = "shop" | "job" | "fees" | "orders" | "general";
+export type ProfessionGroup = "shop" | "job" | "fees" | "general";
 
 export type DiaryProfile = {
   professionGroup: ProfessionGroup;
@@ -14,14 +14,13 @@ export const professionOptions: ProfessionOption[] = [
   { professionGroup: "shop", professionName: "Meri Dukaan", personalSectionEnabled: false, explanation: "Sale, stock and supplier records" },
   { professionGroup: "job", professionName: "Mera Kaam", personalSectionEnabled: false, explanation: "Jobs, materials and payments" },
   { professionGroup: "fees", professionName: "Meri Class", personalSectionEnabled: false, explanation: "Students, fees and class expenses" },
-  { professionGroup: "orders", professionName: "Mere Orders", personalSectionEnabled: false, explanation: "Orders, advance and delivery" },
   { professionGroup: "general", professionName: "Mera Hisaab", personalSectionEnabled: false, explanation: "Simple income and expense records" },
 ];
 
 export const generalDiaryProfile: DiaryProfile = professionOptions[4];
 
 function isProfessionGroup(value: unknown): value is ProfessionGroup {
-  return value === "shop" || value === "job" || value === "fees" || value === "orders" || value === "general";
+  return value === "shop" || value === "job" || value === "fees" || value === "general";
 }
 
 export function getProfessionOption(group: ProfessionGroup) {

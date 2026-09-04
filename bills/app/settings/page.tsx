@@ -126,6 +126,12 @@ export default function SettingsPage() {
 
   async function restore(replaceProfile: boolean) {
     if (!preview) return;
+    const confirmed = window.confirm(
+      replaceProfile
+        ? "Import this backup and replace your current business profile? Existing records with the same ID will stay unchanged."
+        : "Import this backup? Existing records with the same ID will stay unchanged."
+    );
+    if (!confirmed) return;
 
     setBusy(true);
 

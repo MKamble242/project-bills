@@ -4,6 +4,7 @@ import { readRawLocalJobs, validateJobEntry, validateJobExpense } from "@/lib/jo
 import type { JobEntry, JobExpense } from "@/types/job";
 import type { ClassFeeEntry, Student } from "@/types/class";
 import { validateClassFeeEntry, validateStudent } from "@/lib/classes/repository";
+import { readDiaryProfile, validateDiaryProfile, writeDiaryProfile, type DiaryProfile } from "@/lib/profession";
 import { calculateItemTotals } from "./calculations";
 
 const databaseName = "project-bills";
@@ -215,6 +216,7 @@ export type LocalBackup = {
   backupVersion: 1;
   createdAt: string;
   storageMode: "local";
+  profession: DiaryProfile | null;
   profile: BusinessProfile | null;
   customers: Customer[];
   invoices: Invoice[];
@@ -247,9 +249,10 @@ export function validateLocalBackup(input: unknown): { backup: LocalBackup; inva
   const studentIds = new Set(students.map((student) => student.id));
   const classFeeEntries = (Array.isArray(input.classFeeEntries) ? input.classFeeEntries : []).map(validateClassFeeEntry).filter((entry): entry is ClassFeeEntry => entry !== null && studentIds.has(entry.studentId));
   const profile = input.profile === null || input.profile === undefined ? null : isRecord(input.profile) && typeof input.profile.businessName === "string" ? input.profile as BusinessProfile : null;
+  const profession = input.profession === null || input.profession === undefined ? null : validateDiaryProfile(input.profession);
   const invalidRecords = input.customers.length - customers.length + input.invoices.length - invoices.length + input.paymentEvents.length - paymentEvents.length + (Array.isArray(input.invoiceItems) ? input.invoiceItems.length - invoiceItems.length : 0) + (Array.isArray(input.shopEntries) ? input.shopEntries.length - shopEntries.length : 0) + (Array.isArray(input.jobs) ? input.jobs.length - jobs.length : 0) + (Array.isArray(input.jobExpenses) ? input.jobExpenses.length - jobExpenses.length : 0) + (Array.isArray(input.students) ? input.students.length - students.length : 0) + (Array.isArray(input.classFeeEntries) ? input.classFeeEntries.length - classFeeEntries.length : 0);
   if (invoices.length === 0 && input.invoices.length > 0) throw new Error("The backup contains no valid invoices.");
-  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profile, customers, invoices, invoiceItems, paymentEvents, shopEntries, jobs, jobExpenses, students, classFeeEntries }, invalidRecords };
+  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profession, profile, customers, invoices, invoiceItems, paymentEvents, shopEntries, jobs, jobExpenses, students, classFeeEntries }, invalidRecords };
 }
 
 export async function createLocalBackup(): Promise<LocalBackup> {
@@ -275,7 +278,7 @@ export async function createLocalBackup(): Promise<LocalBackup> {
       return { students: [] as Student[], feeEntries: [] as ClassFeeEntry[] };
     }
   })();
-  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries(), jobs, jobExpenses, students, classFeeEntries: feeEntries };
+  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profession: readDiaryProfile(), profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries(), jobs, jobExpenses, students, classFeeEntries: feeEntries };
 }
 
 export async function importLocalBackup(backup: LocalBackup, options: { replaceProfile: boolean } = { replaceProfile: false }) {
@@ -300,10 +303,6 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   const classFeeEntryStore = transaction.objectStore("class_fee_entries");
   const jobStore = transaction.objectStore("jobs");
   const jobExpenseStore = transaction.objectStore("job_expenses");
-  studentStore.clear();
-  classFeeEntryStore.clear();
-  jobStore.clear();
-  jobExpenseStore.clear();
   let imported = 0;
   let skipped = 0;
   const importedInvoiceIds = new Set<string>();
@@ -318,5 +317,6 @@ export async function importLocalBackup(backup: LocalBackup, options: { replaceP
   await transactionComplete(transaction);
   database.close();
   window.localStorage.setItem(shopEntriesStorageKey, JSON.stringify(shopEntries));
+  if (options.replaceProfile && backup.profession) writeDiaryProfile(backup.profession);
   return { imported, skipped, profileReplaced: options.replaceProfile && Boolean(backup.profile) };
 }

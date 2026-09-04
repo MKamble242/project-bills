@@ -102,7 +102,6 @@ export default function ShopDashboard() {
         <section className="mt-8 grid gap-3 sm:grid-cols-3">
           <button type="button" onClick={() => openEntryForm("sale")} className="min-h-[56px] rounded-2xl bg-blue-600 px-5 py-4 text-base font-black text-white">+ Sale Likho</button>
           <button type="button" onClick={() => openEntryForm("expense")} className="min-h-[56px] rounded-2xl bg-amber-500 px-5 py-4 text-base font-black text-white">- Dukaan ka Kharcha</button>
-          <button type="button" onClick={() => setMessage("Supplier balance tracking will be added when supplier records are introduced.")} className="min-h-[56px] rounded-2xl border border-slate-300 bg-white px-5 py-4 text-base font-black text-slate-800">Supplier ka Hisaab</button>
         </section>
 
         {message && <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">{message}</p>}

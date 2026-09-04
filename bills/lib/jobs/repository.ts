@@ -1,7 +1,7 @@
 import type { JobEntry, JobExpense, JobExpenseType, JobStatus, JobWithExpenses } from "@/types/job";
 
 const databaseName = "project-bills";
-const databaseVersion = 4;
+const databaseVersion = 5;
 const jobStores = ["jobs", "job_expenses"] as const;
 
 type JobDraft = Pick<JobEntry, "customerName" | "title" | "totalAmountPaise" | "receivedAmountPaise">;

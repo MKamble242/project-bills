@@ -1,5 +1,5 @@
-const CACHE_NAME = "project-bills-shell-v2";
-const SHELL = ["/", "/offline", "/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "project-bills-shell-v3";
+const SHELL = ["/", "/offline", "/settings", "/customers", "/invoices/new", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)));
