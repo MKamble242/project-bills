@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { addJobExpense, completeLocalJob, createLocalJob, deleteJobExpense, deleteJobPayment, deleteLocalJob, listLocalJobs, recordJobPayment, updateJobExpense, updateJobPayment, updateLocalJob } from "@/lib/jobs/repository";
 import type { JobExpenseType, JobWithExpenses } from "@/types/job";
@@ -32,6 +33,7 @@ export default function JobDashboard() {
   const [error, setError] = useState("");
   const [jobView, setJobView] = useState<"active" | "completed">("active");
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const visibleJobs = useMemo(() => jobs.filter((job) => job.status === jobView), [jobs, jobView]);
   const activeCount = jobs.filter((job) => job.status === "active").length;
@@ -57,6 +59,12 @@ export default function JobDashboard() {
     const timer = window.setTimeout(() => { void loadJobs(); }, 0);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("new-job") !== "1") return;
+    const timer = window.setTimeout(() => setShowCreate(true), 0);
+    return () => window.clearTimeout(timer);
+  }, [searchParams]);
 
   function resetMessage() {
     setMessage("");
