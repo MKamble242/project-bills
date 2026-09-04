@@ -45,7 +45,7 @@ export default function JobDashboard() {
           errorName: error instanceof Error ? error.name : "UnknownError",
           errorMessage: error instanceof Error ? error.message : String(error),
           databaseName: "project-bills",
-          expectedVersion: 4,
+          expectedVersion: 5,
         });
       }
       setError("We could not load jobs stored on this device.");
