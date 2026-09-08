@@ -11,6 +11,8 @@
 - [ ] Review `git diff` and confirm only intended beta changes are included.
 - [ ] Recruit 20-40 testers across the four work types using `BETA_LAUNCH_PLAN.md`.
 - [ ] Share `BETA_FEEDBACK_TEMPLATES.md` with the tester group and review feedback weekly.
+- [ ] Send `BETA_INSTALL_GUIDE.md` and `BETA_COMMUNICATION_TEMPLATES.md` to each tester.
+- [ ] Create the Google Sheet or Notion tables from `BETA_OPERATIONS.md`.
 
 ## Create the Beta Tag
 

@@ -36,3 +36,6 @@ Records are stored in this browser on this device. They are not synced to a serv
 - [ARCHITECTURE_NOTES.md](ARCHITECTURE_NOTES.md): how screens, storage, backups, and offline mode fit together.
 - [BETA_LAUNCH_PLAN.md](BETA_LAUNCH_PLAN.md): target users, goals, timeline, and privacy choice.
 - [BETA_FEEDBACK_TEMPLATES.md](BETA_FEEDBACK_TEMPLATES.md): welcome, weekly check-in, and bug-report text.
+- [BETA_INSTALL_GUIDE.md](BETA_INSTALL_GUIDE.md): tester setup, first record, backup, and feedback steps.
+- [BETA_COMMUNICATION_TEMPLATES.md](BETA_COMMUNICATION_TEMPLATES.md): ready-to-send beta messages.
+- [BETA_OPERATIONS.md](BETA_OPERATIONS.md): recruitment, tracking, metrics, analysis, and report template.
