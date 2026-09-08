@@ -5,11 +5,10 @@ Diary is frozen as a private beta for fast, simple record keeping by contractors
 ## Included
 
 - Manual invoice creation with multiple line items
-- Per-item GST calculation and INR totals
+- Simple INR totals and manual payment recording
 - Local invoice review, approval, and detail pages
 - PDF download and print-friendly invoice output
 - WhatsApp deep links for invoice sharing and payment reminders
-- UPI payment link and QR code generation when a UPI ID is configured
 - Manual payment recording with partial-payment support
 - Payment history and paid/outstanding balances
 - Customer hub with search, sorting, aggregated totals, and ledger history
@@ -24,7 +23,7 @@ The app can be used without an internet connection after its shell has been load
 
 ## Payment and Sharing Boundaries
 
-UPI links and QR codes open the user's payment app; they do not verify a bank transaction. Payments are recorded manually by the business owner. WhatsApp actions open a prefilled `wa.me` link and do not send messages automatically or report delivery.
+Payments are recorded manually by the business owner. WhatsApp actions open a prefilled `wa.me` link and do not send messages automatically or report delivery.
 
 ## Limitations
 

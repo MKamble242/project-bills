@@ -150,9 +150,8 @@ function GeneralLocalDashboard() {
 
   const businessSettings = readBusinessSettings();
   const businessProfileComplete = Boolean(businessSettings.businessName.trim());
-  const upiConfigured = Boolean(businessSettings.upiId.trim());
   const backupConfigured = Boolean(lastBackupAt);
-  const showSetupChecklist = !setupChecklistDismissed && !(businessProfileComplete && upiConfigured && backupConfigured);
+  const showSetupChecklist = !setupChecklistDismissed && !(businessProfileComplete && backupConfigured);
 
   async function handleBackupNow() {
     setBackupState("preparing");
@@ -287,9 +286,6 @@ function GeneralLocalDashboard() {
             <div className="mt-3 space-y-2 text-sm text-amber-900">
               <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white/70 px-3 py-2">
                 <span>{businessProfileComplete ? "✓ Business profile completed" : "• Business profile completed"}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white/70 px-3 py-2">
-                <span>{upiConfigured ? "✓ UPI QR configured" : "• UPI QR configured"}</span>
               </div>
               <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-white/70 px-3 py-2">
                 <span>{backupConfigured ? "✓ Backup file created" : "• Backup file created"}</span>

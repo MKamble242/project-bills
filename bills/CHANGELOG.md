@@ -15,3 +15,4 @@
 - Added architecture notes for future maintenance.
 - Added a skippable first-use quick-start and a privacy-aware beta feedback page.
 - Added a five-week beta launch plan and communication templates.
+- Simplified Hisab Kitab by removing tax-invoice and QR payment setup from the beta UI.

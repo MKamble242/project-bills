@@ -11,8 +11,6 @@ import {
 import { createLocalInvoice, updateLocalInvoice } from "@/lib/invoices/local-repository";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { calculateItemTotals } from "@/lib/invoices/calculations";
-import { readBusinessSettings } from "@/lib/business-settings";
-import type { DocumentType } from "@/types/invoice";
 import { useAppLanguage } from "@/components/AppLanguageProvider";
 
 function ReviewInvoiceContent() {
@@ -24,7 +22,6 @@ function ReviewInvoiceContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [savedInvoiceNumber, setSavedInvoiceNumber] = useState("");
   const [savedInvoiceId, setSavedInvoiceId] = useState("");
-  const [businessGstin] = useState(() => readBusinessSettings().gstin);
 
   const [draft] = useState<InvoiceDraft>(() =>
     readInvoiceDraft() || {
@@ -49,13 +46,11 @@ function ReviewInvoiceContent() {
     gstRate,
     dueDays,
     confidenceNotes,
-    documentType,
     advanceReceived = 0,
   } = draft;
 
   const items = draft.items || [{ id: "legacy", description, quantity, unitPrice: price, gstRate }];
-  const { subtotal, gstAmount, total } = calculateItemTotals(items);
-  const activeDocumentType: DocumentType = documentType || "simple_bill";
+  const { subtotal, total } = calculateItemTotals(items);
   const balanceDue = Math.max(0, total - advanceReceived);
 
   function formatCurrency(amount: number) {
@@ -82,12 +77,6 @@ function ReviewInvoiceContent() {
       setErrorMessage(
         "Please check the customer name, work description, and amount."
       );
-      setSaving(false);
-      return;
-    }
-
-    if (activeDocumentType === "tax_invoice" && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(businessGstin.trim().toUpperCase())) {
-      setErrorMessage("Add a valid GSTIN in Settings to create a Tax Invoice.");
       setSaving(false);
       return;
     }
@@ -230,7 +219,7 @@ function ReviewInvoiceContent() {
                   DIARY
                 </p>
 
-                <p className="mt-2 text-sm text-slate-400">{activeDocumentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}</p>
+                <p className="mt-2 text-sm text-slate-400">SIMPLE RECORD</p>
               </div>
 
               <div className="text-right">
@@ -298,14 +287,9 @@ function ReviewInvoiceContent() {
                 </span>
               </div>
 
-              {activeDocumentType === "tax_invoice" && <div className="flex justify-between text-sm">
-                <span className="text-slate-500">GST ({gstRate}%)</span>
-                <span className="font-semibold">{formatCurrency(gstAmount)}</span>
-              </div>}
-
               <div className="border-t border-slate-200 pt-3">
                 <div className="flex items-end justify-between">
-                  <span className="font-bold">{activeDocumentType === "tax_invoice" ? "Total" : "Total Amount"}</span>
+                  <span className="font-bold">Total Amount</span>
 
                   <span className="text-2xl font-black">
                     {formatCurrency(total)}

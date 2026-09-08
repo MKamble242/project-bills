@@ -2,7 +2,7 @@
 
 import { readBusinessSettings } from "@/lib/business-settings";
 import { readAppMetadata, writeAppMetadata } from "@/lib/invoices/local-repository";
-import type { DocumentType, InvoiceItem, WhatsAppMessageLanguage } from "@/types/invoice";
+import type { InvoiceItem, WhatsAppMessageLanguage } from "@/types/invoice";
 
 type WhatsAppShareButtonProps = {
   phone: string | null;
@@ -17,7 +17,6 @@ type WhatsAppShareButtonProps = {
   advanceReceived?: number;
   paidAmount?: number;
   invoiceDate?: string;
-  documentType?: DocumentType;
 };
 
 export function normalizeIndianPhone(phone: string | null | undefined) {
@@ -43,7 +42,6 @@ export default function WhatsAppShareButton({
   advanceReceived = 0,
   paidAmount,
   invoiceDate,
-  documentType = "simple_bill",
 }: WhatsAppShareButtonProps) {
   async function shareOnWhatsApp() {
     const settings = readBusinessSettings();
@@ -98,9 +96,9 @@ export default function WhatsAppShareButton({
           simple_marathi: `\n\nधन्यवाद,\n*${resolvedBusinessName}*`,
         }
       : { simple_english: "", simple_hindi: "", simple_marathi: "" };
-    const commonEnglish = `${documentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}: *${invoiceNumber}*\nDate: ${dateText}\n\nDear *${customerName || "Customer"}*,\n\nItems:\n${itemBreakdown}\n\nTotal: *${formatAmount(total)}*\n${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Amount paid: *${formatAmount(totalPaid)}*\nBalance due: *${formatAmount(activeAmount)}*${paymentDetails.simple_english}${businessFooter.simple_english}`;
-    const commonHindi = `${documentType === "tax_invoice" ? "टैक्स इनवॉइस" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nविवरण:\n${itemBreakdown}\n\nकुल राशि: *${formatAmount(total)}*\n${advanceAmount > 0 ? `प्राप्त अग्रिम: *${formatAmount(advanceAmount)}*\n` : ""}प्राप्त भुगतान: *${formatAmount(totalPaid)}*\nबाकी राशि: *${formatAmount(activeAmount)}*${paymentDetails.simple_hindi}${businessFooter.simple_hindi}`;
-    const commonMarathi = `${documentType === "tax_invoice" ? "कर बिल" : "बिल"}: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nतपशील:\n${itemBreakdown}\n\nएकूण रक्कम: *${formatAmount(total)}*\n${advanceAmount > 0 ? `मिळालेली आगाऊ रक्कम: *${formatAmount(advanceAmount)}*\n` : ""}मिळालेले पेमेंट: *${formatAmount(totalPaid)}*\nबाकी रक्कम: *${formatAmount(activeAmount)}*${paymentDetails.simple_marathi}${businessFooter.simple_marathi}`;
+    const commonEnglish = `DIARY RECORD: *${invoiceNumber}*\nDate: ${dateText}\n\nDear *${customerName || "Customer"}*,\n\nItems:\n${itemBreakdown}\n\nTotal: *${formatAmount(total)}*\n${advanceAmount > 0 ? `Advance received: *${formatAmount(advanceAmount)}*\n` : ""}Amount paid: *${formatAmount(totalPaid)}*\nBalance due: *${formatAmount(activeAmount)}*${paymentDetails.simple_english}${businessFooter.simple_english}`;
+    const commonHindi = `डायरी रिकॉर्ड: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nविवरण:\n${itemBreakdown}\n\nकुल राशि: *${formatAmount(total)}*\n${advanceAmount > 0 ? `प्राप्त अग्रिम: *${formatAmount(advanceAmount)}*\n` : ""}प्राप्त भुगतान: *${formatAmount(totalPaid)}*\nबाकी राशि: *${formatAmount(activeAmount)}*${paymentDetails.simple_hindi}${businessFooter.simple_hindi}`;
+    const commonMarathi = `डायरी नोंद: *${invoiceNumber}*\nदिनांक: ${dateText}\n\nप्रिय *${customerName || "ग्राहक"}*,\n\nतपशील:\n${itemBreakdown}\n\nएकूण रक्कम: *${formatAmount(total)}*\n${advanceAmount > 0 ? `मिळालेली आगाऊ रक्कम: *${formatAmount(advanceAmount)}*\n` : ""}मिळालेले पेमेंट: *${formatAmount(totalPaid)}*\nबाकी रक्कम: *${formatAmount(activeAmount)}*${paymentDetails.simple_marathi}${businessFooter.simple_marathi}`;
     const message = language === "simple_hindi" ? commonHindi : language === "simple_marathi" ? commonMarathi : commonEnglish;
 
     const fallbackUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;

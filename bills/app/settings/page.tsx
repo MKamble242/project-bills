@@ -250,33 +250,12 @@ export default function SettingsPage() {
           </label>
 
           <label className="block text-sm font-bold">
-            {dictionary.upiId}
-            <input
-              value={settings.upiId}
-              onChange={(event) => setSettings({ ...settings, upiId: event.target.value })}
-              placeholder="merchant@upi"
-              className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
-            />
-          </label>
-
-          <label className="block text-sm font-bold">
             {dictionary.phoneNumber}
             <input
               value={settings.phoneNumber}
               onChange={(event) => setSettings({ ...settings, phoneNumber: event.target.value })}
               className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
             />
-          </label>
-
-          <label className="block text-sm font-bold">
-            {dictionary.gstin}
-            <input
-              value={settings.gstin}
-              onChange={(event) => setSettings({ ...settings, gstin: event.target.value.toUpperCase() })}
-              placeholder="27ABCDE1234F1Z5"
-              className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
-            />
-            <span className="mt-1 block text-xs font-normal text-slate-500">Used to enable Tax Invoice details.</span>
           </label>
 
           <button type="button" onClick={save} className="min-h-12 rounded-xl bg-blue-600 px-5 py-3 font-bold text-white">

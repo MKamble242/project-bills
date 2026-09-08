@@ -178,7 +178,6 @@ function formatDate(dateString: string) {
 }
 
 export default function InvoicePDF({ invoice }: InvoicePDFProps) {
-  const isTaxInvoice = invoice.document_type === "tax_invoice";
   const advanceReceived = Number(invoice.advance_received || 0);
   const outstandingAmount = Number(invoice.outstanding_amount ?? Number(invoice.total) - advanceReceived);
 
@@ -189,7 +188,7 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
           <View style={styles.headerRow}>
             <View>
               <Text style={styles.brand}>Diary</Text>
-              <Text style={styles.invoiceLabel}>{isTaxInvoice ? "TAX INVOICE" : "BILL"}</Text>
+              <Text style={styles.invoiceLabel}>DIARY RECORD</Text>
             </View>
 
             <View>
@@ -241,11 +240,6 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
             <Text style={styles.summaryLabel}>Subtotal</Text>
             <Text>{formatCurrency(invoice.subtotal)}</Text>
           </View>
-
-          {isTaxInvoice && <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>GST ({invoice.gst_rate}%)</Text>
-            <Text>{formatCurrency(invoice.gst_amount)}</Text>
-          </View>}
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total</Text>

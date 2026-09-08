@@ -7,7 +7,6 @@ import InvoiceStatusButton from "@/components/InvoiceStatusButton";
 import PrintInvoiceButton from "@/components/PrintInvoiceButton";
 import LocalInvoiceDetails from "@/components/LocalInvoiceDetails";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import InvoicePaymentPanel from "@/components/InvoicePaymentPanel";
 
 type Props = {
   params: Promise<{
@@ -118,15 +117,8 @@ export default async function InvoiceDetailsPage({ params }: Props) {
             </div>
 
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Payment terms
-              </p>
-
-              <p className="mt-2 font-bold">
-                {invoice.due_days === 0
-                  ? "Due immediately"
-                  : `Due within ${invoice.due_days} days`}
-              </p>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Payment terms</p>
+              <p className="mt-2 font-bold">{invoice.due_days === 0 ? "Due immediately" : `Due within ${invoice.due_days} days`}</p>
             </div>
           </div>
 
@@ -162,15 +154,6 @@ export default async function InvoiceDetailsPage({ params }: Props) {
               </span>
             </div>
 
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">
-                GST ({invoice.gst_rate}%)
-              </span>
-              <span className="font-semibold">
-                {formatCurrency(Number(invoice.gst_amount))}
-              </span>
-            </div>
-
             <div className="border-t border-slate-200 pt-3">
               <div className="flex justify-between">
                 <span className="font-bold">Total</span>
@@ -182,12 +165,6 @@ export default async function InvoiceDetailsPage({ params }: Props) {
           </div>
         </section>
 
-        <InvoicePaymentPanel
-          invoiceNumber={invoice.invoice_number}
-          total={Number(invoice.total)}
-          outstandingAmount={Number(invoice.total)}
-          dueDays={invoice.due_days}
-        />
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <DownloadInvoiceButton invoice={invoice} />
