@@ -100,12 +100,12 @@ export default function SettingsPage() {
       const backup = await createLocalBackup();
       const stamp = new Date().toISOString().slice(0, 10);
       downloadText(
-        `project-bills-backup-${stamp}.json`,
+        `diary-backup-${stamp}.json`,
         JSON.stringify(backup, null, 2),
         "application/json"
       );
       downloadText(
-        `project-bills-invoices-${stamp}.csv`,
+        `diary-records-${stamp}.csv`,
         invoiceCsv(backup.invoices),
         "text/csv"
       );
@@ -183,7 +183,7 @@ export default function SettingsPage() {
           ← Back to dashboard
         </Link>
 
-        <h1 className="mt-8 text-4xl font-black">{dictionary.appPreferences}</h1>
+        <h1 className="mt-8 text-4xl font-black">Diary settings</h1>
         <p className="mt-2 text-slate-600">{dictionary.settingsStored}</p>
 
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

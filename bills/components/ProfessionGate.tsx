@@ -30,7 +30,7 @@ function ProfessionSelection({ onSelected }: { onSelected: (profile: DiaryProfil
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-4 py-8 text-slate-950 sm:flex sm:items-center sm:justify-center">
       <section className="mx-auto w-full max-w-xl">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Project BILLS</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Diary</p>
         <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{heading}</h1>
         <p className="mt-3 text-slate-600">Choose the work type that best matches your records.</p>
         <div className="mt-6 space-y-3">

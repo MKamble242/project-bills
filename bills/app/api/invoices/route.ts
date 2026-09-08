@@ -41,7 +41,7 @@ export async function GET() {
 function invoiceNumber() {
   const year = new Date().getFullYear();
   const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
-  return `BILLS-${year}-${suffix}`;
+  return `DIARY-${year}-${suffix}`;
 }
 
 export async function POST(request: Request) {

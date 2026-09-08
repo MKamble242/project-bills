@@ -162,7 +162,7 @@ function GeneralLocalDashboard() {
       const backup = await createLocalBackup();
       const stamp = new Date().toISOString().slice(0, 10);
       downloadText(
-        `project-bills-backup-${stamp}.json`,
+        `diary-backup-${stamp}.json`,
         JSON.stringify(backup, null, 2),
         "application/json"
       );
@@ -236,15 +236,15 @@ function GeneralLocalDashboard() {
       <div className="mx-auto min-h-screen max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
         <nav className="flex flex-wrap items-center justify-between gap-3 py-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-slate-950/20">B</div>
-            <div><p className="text-sm font-black tracking-[0.2em]">BILLS</p><p className="text-xs text-slate-500">Invoice less. Earn more.</p></div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white shadow-lg shadow-slate-950/20">D</div>
+            <div><p className="text-sm font-black tracking-[0.2em]">Diary</p><p className="text-xs text-slate-500">Simple records. Clear money.</p></div>
           </Link>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <OnlineStatus />
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">{dictionary.navSettings}</Link>
             <Link href="/customers" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">{dictionary.navCustomers}</Link>
-            <Link href="/invoices" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">All bills</Link>
-            <Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">{dictionary.createBill}</Link>
+            <Link href="/invoices" className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 sm:block">Hisab Kitab</Link>
+            <Link href="/invoices/new" className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white">Add record</Link>
           </div>
         </nav>
 
@@ -255,10 +255,10 @@ function GeneralLocalDashboard() {
           <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
           <div className="relative max-w-2xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1.5 text-xs font-semibold text-amber-100"><span className="h-2 w-2 rounded-full bg-amber-300" />Local-only mode</div>
-            <h1 className="max-w-xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">Turn messy work<span className="block text-blue-400">into clean money.</span></h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-slate-300 sm:text-lg">Invoices are stored only on this device and are not synced to Supabase.</p>
+            <h1 className="max-w-xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">Your work, recorded<span className="block text-blue-400">your money, clear.</span></h1>
+            <p className="mt-5 max-w-lg text-base leading-7 text-slate-300 sm:text-lg">Your records stay on this device and are not synced automatically.</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <Link href="/invoices/new" className="flex min-h-14 items-center justify-between rounded-2xl bg-blue-500 px-5 py-4 font-bold text-white shadow-xl shadow-blue-500/25 transition hover:bg-blue-400"><span><span className="block text-xs uppercase tracking-wider text-blue-100">Manual</span>Create Invoice</span><span className="text-2xl">+</span></Link>
+              <Link href="/invoices/new" className="flex min-h-14 items-center justify-between rounded-2xl bg-blue-500 px-5 py-4 font-bold text-white shadow-xl shadow-blue-500/25 transition hover:bg-blue-400"><span><span className="block text-xs uppercase tracking-wider text-blue-100">Hisab Kitab</span>Add a record</span><span className="text-2xl">+</span></Link>
             </div>
           </div>
         </section>
@@ -269,7 +269,7 @@ function GeneralLocalDashboard() {
           <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-black text-amber-900">Get BILLS ready</p>
+                <p className="text-sm font-black text-amber-900">Make Diary ready</p>
                 <p className="mt-1 text-sm text-amber-800">Complete the essentials before you send your next bill.</p>
               </div>
               <button
@@ -322,7 +322,7 @@ function GeneralLocalDashboard() {
 
           <section className="mt-4 grid gap-4 sm:grid-cols-3">
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-xl">₹</div><p className="mt-6 text-sm font-medium text-slate-500">Money expected</p><p className="mt-1 text-3xl font-black tracking-tight">{amountsHidden ? "₹- - - - -" : currency(unpaid)}</p><p className="mt-1 text-xs text-slate-500">Across {invoices.filter((invoice) => invoice.status !== "paid").length} unpaid invoices</p></div>
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-xl">◷</div><p className="mt-6 text-sm font-medium text-slate-500">Total invoices</p><p className="mt-1 text-3xl font-black tracking-tight">{invoices.length}</p><p className="mt-1 text-xs text-slate-500">Saved on this device</p></div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-xl">◷</div><p className="mt-6 text-sm font-medium text-slate-500">Total records</p><p className="mt-1 text-3xl font-black tracking-tight">{invoices.length}</p><p className="mt-1 text-xs text-slate-500">Saved on this device</p></div>
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-xl">✓</div><p className="mt-6 text-sm font-medium text-slate-500">Collected</p><p className="mt-1 text-3xl font-black tracking-tight">{amountsHidden ? "₹- - - - -" : currency(paid)}</p><p className="mt-1 text-xs text-emerald-700">Paid invoices</p></div>
           </section>
 
@@ -356,7 +356,7 @@ function GeneralLocalDashboard() {
             )}
           </section>
 
-          <section className="mt-8"><div className="mb-4"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Your workspace</p><h2 className="mt-1 text-2xl font-black tracking-tight">Recent invoices</h2></div>
+          <section className="mt-8"><div className="mb-4"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Your workspace</p><h2 className="mt-1 text-2xl font-black tracking-tight">Recent records</h2></div>
             {invoices.length === 0 ? <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-2xl">₹</div><h3 className="mt-4 text-lg font-black">No invoices yet</h3><p className="mx-auto mt-2 max-w-sm text-sm text-slate-500">Create your first invoice and it will stay on this device.</p><Link href="/invoices/new" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Create first invoice</Link></div> : <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">{invoices.slice(0, 10).map((invoice, index) => {
               const canQuickMarkPaid = isQuickMarkPaidEligible(invoice);
               const isSavingThisInvoice = savingInvoiceId === invoice.id;

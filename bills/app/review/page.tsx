@@ -227,7 +227,7 @@ function ReviewInvoiceContent() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-bold tracking-[0.18em] text-blue-400">
-                  PROJECT BILLS
+                  DIARY
                 </p>
 
                 <p className="mt-2 text-sm text-slate-400">{activeDocumentType === "tax_invoice" ? "TAX INVOICE" : "BILL"}</p>

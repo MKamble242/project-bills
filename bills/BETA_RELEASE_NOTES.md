@@ -1,6 +1,6 @@
-# Project BILLS v0.1.0-beta
+# Diary v0.1.0-beta
 
-Project BILLS is frozen as a private beta for fast, manual invoicing by contractors, freelancers, shop owners, and other small local businesses.
+Diary is frozen as a private beta for fast, simple record keeping by contractors, freelancers, shop owners, tutors, and other small local businesses.
 
 ## Included
 
@@ -18,7 +18,7 @@ Project BILLS is frozen as a private beta for fast, manual invoicing by contract
 
 ## Architecture
 
-The beta stores invoice, customer, profile, item, and payment data in the browser's IndexedDB database named `project-bills`. The local repository is the source of truth for the private beta. Backup files are JSON and include local IDs so records can be moved between browsers or devices.
+The beta stores business records in the browser's IndexedDB. The local repository is the source of truth for the private beta. Backup files are JSON and include local IDs so records can be moved between browsers or devices.
 
 The app can be used without an internet connection after its shell has been loaded or installed. A backup should be downloaded before clearing browser data, changing phones, or reinstalling a browser.
 

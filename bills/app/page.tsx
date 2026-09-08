@@ -110,8 +110,8 @@ export default async function Home() {
             </div>
 
             <div>
-              <p className="text-sm font-black tracking-[0.2em]">BILLS</p>
-              <p className="text-xs text-slate-500">Invoice less. Earn more.</p>
+              <p className="text-sm font-black tracking-[0.2em]">Diary</p>
+              <p className="text-xs text-slate-500">Simple records. Clear money.</p>
             </div>
           </div>
 
@@ -146,7 +146,7 @@ export default async function Home() {
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xl">
                 +
               </span>
-              Create invoice
+              Add record
               <span className="text-blue-200">→</span>
             </Link>
           </div>

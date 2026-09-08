@@ -83,7 +83,7 @@ async function nextInvoiceNumber(database: IDBDatabase) {
   const sequence = typeof current?.value === "number" ? current.value + 1 : 1;
   metadata.put({ key: "invoice_sequence", value: sequence });
   await transactionComplete(transaction);
-  return `BILLS-LOCAL-${new Date().getFullYear()}-${String(sequence).padStart(4, "0")}`;
+  return `DIARY-${new Date().getFullYear()}-${String(sequence).padStart(4, "0")}`;
 }
 
 function toInvoice(draft: InvoiceDraft, invoiceNumber: string): Invoice {
@@ -270,7 +270,7 @@ export async function listLocalCustomers(): Promise<Customer[]> {
 }
 
 export type LocalBackup = {
-  app: "Project BILLS";
+  app: "Diary";
   backupVersion: 1;
   createdAt: string;
   storageMode: "local";
@@ -295,7 +295,7 @@ function isPayment(value: unknown): value is PaymentEvent { return isRecord(valu
 function isItem(value: unknown): value is InvoiceItem { return isRecord(value) && typeof value.id === "string" && typeof value.description === "string" && typeof value.quantity === "number" && typeof value.unitPrice === "number" && typeof value.gstRate === "number" && typeof value.lineTotal === "number"; }
 
 export function validateLocalBackup(input: unknown): { backup: LocalBackup; invalidRecords: number } {
-  if (!isRecord(input) || input.app !== "Project BILLS" || input.backupVersion !== 1 || input.storageMode !== "local" || typeof input.createdAt !== "string" || !Array.isArray(input.customers) || !Array.isArray(input.invoices) || !Array.isArray(input.paymentEvents)) throw new Error("Invalid backup format. Choose a Project BILLS JSON backup.");
+  if (!isRecord(input) || (input.app !== "Diary" && input.app !== "Project BILLS") || input.backupVersion !== 1 || input.storageMode !== "local" || typeof input.createdAt !== "string" || !Array.isArray(input.customers) || !Array.isArray(input.invoices) || !Array.isArray(input.paymentEvents)) throw new Error("This backup could not be read. Choose a Diary backup JSON file.");
   const customers = input.customers.filter(isCustomer);
   const invoices = input.invoices.filter(isInvoice).map(normalizeInvoice);
   const paymentEvents = input.paymentEvents.filter(isPayment);
@@ -312,7 +312,7 @@ export function validateLocalBackup(input: unknown): { backup: LocalBackup; inva
   const profession = input.profession === null || input.profession === undefined ? null : validateDiaryProfile(input.profession);
   const invalidRecords = input.customers.length - customers.length + input.invoices.length - invoices.length + input.paymentEvents.length - paymentEvents.length + (Array.isArray(input.invoiceItems) ? input.invoiceItems.length - invoiceItems.length : 0) + (Array.isArray(input.shopEntries) ? input.shopEntries.length - shopEntries.length : 0) + (Array.isArray(input.jobs) ? input.jobs.length - jobs.length : 0) + (Array.isArray(input.jobExpenses) ? input.jobExpenses.length - jobExpenses.length : 0) + (Array.isArray(input.students) ? input.students.length - students.length : 0) + (Array.isArray(input.classFeeEntries) ? input.classFeeEntries.length - classFeeEntries.length : 0);
   if (invoices.length === 0 && input.invoices.length > 0) throw new Error("The backup contains no valid invoices.");
-  return { backup: { app: "Project BILLS", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profession, profile, customers, invoices, invoiceItems, paymentEvents, shopEntries, jobs, jobExpenses, jobPayments, students, classFeeEntries }, invalidRecords };
+  return { backup: { app: "Diary", backupVersion: 1, createdAt: input.createdAt, storageMode: "local", profession, profile, customers, invoices, invoiceItems, paymentEvents, shopEntries, jobs, jobExpenses, jobPayments, students, classFeeEntries }, invalidRecords };
 }
 
 export async function createLocalBackup(): Promise<LocalBackup> {
@@ -338,7 +338,7 @@ export async function createLocalBackup(): Promise<LocalBackup> {
       return { students: [] as Student[], feeEntries: [] as ClassFeeEntry[] };
     }
   })();
-  return { app: "Project BILLS", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profession: readDiaryProfile(), profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries(), jobs, jobExpenses, jobPayments, students, classFeeEntries: feeEntries };
+  return { app: "Diary", backupVersion: 1, createdAt: new Date().toISOString(), storageMode: "local", profession: readDiaryProfile(), profile: (profile as BusinessProfile | undefined) || null, customers: customers as Customer[], invoices: normalizedInvoices, invoiceItems, paymentEvents: paymentEvents as PaymentEvent[], shopEntries: readShopEntries(), jobs, jobExpenses, jobPayments, students, classFeeEntries: feeEntries };
 }
 
 export async function importLocalBackup(backup: LocalBackup, options: { replaceProfile: boolean } = { replaceProfile: false }) {

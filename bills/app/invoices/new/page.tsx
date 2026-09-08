@@ -169,7 +169,7 @@ function InvoiceForm() {
   return (
     <div className="mx-auto max-w-xl">
       <Link href="/" className="text-sm font-bold text-slate-500 hover:text-slate-950">← {dictionary.backDashboard}</Link>
-      <div className="mt-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{dictionary.createBill}</p><h1 className="mt-2 text-4xl font-black tracking-tight">{dictionary.newBill.replace("+ ", "")}</h1></div>
+      <div className="mt-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Hisab Kitab</p><h1 className="mt-2 text-4xl font-black tracking-tight">Add a bill</h1></div>
       <form onSubmit={handleSubmit} className="mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{dictionary.simpleBill}</p>
@@ -198,7 +198,7 @@ function InvoiceForm() {
         {advanceReceived > 0 && <div><p className="text-sm font-bold">Advance payment method</p><div className="mt-2 grid grid-cols-2 gap-3">{(["upi", "cash"] as const).map((method) => <button key={method} type="button" onClick={() => setAdvancePaymentMethod(method)} className={`rounded-xl border px-3 py-3 text-sm font-bold ${advancePaymentMethod === method ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200"}`}>{method === "upi" ? "UPI" : "Cash"}</button>)}</div></div>}
         <label className="block text-sm font-bold">Notes<textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-2 min-h-20 w-full rounded-xl border border-slate-200 px-4 py-3" /></label>
         {advanceError && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{advanceError}</p>}
-        <button type="submit" className="min-h-14 w-full rounded-2xl bg-blue-600 px-5 py-4 text-lg font-black text-white">Review invoice →</button>
+        <button type="submit" className="min-h-14 w-full rounded-2xl bg-blue-600 px-5 py-4 text-lg font-black text-white">Review bill →</button>
         <button type="button" onClick={startNew} className="w-full text-sm font-bold text-slate-500 underline">Discard draft</button>
       </form>
       {resumeDraft && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"><section role="dialog" aria-modal="true" aria-labelledby="resume-title" className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl"><h2 id="resume-title" className="text-xl font-black">Continue unfinished bill?</h2><p className="mt-2 text-sm text-slate-600">Last saved: {resumeDraft.savedAt ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(resumeDraft.savedAt)) : "Recently"}</p><div className="mt-5 grid grid-cols-2 gap-3"><button type="button" onClick={continueDraft} className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Continue</button><button type="button" onClick={startNew} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Start new</button></div></section></div>}

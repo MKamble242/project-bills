@@ -1,6 +1,6 @@
 # Architecture Notes
 
-BILLS is a Next.js app with a local-first browser data model.
+Diary is a Next.js app with a local-first browser data model.
 
 ## Screens
 

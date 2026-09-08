@@ -1,8 +1,8 @@
-# BILLS User Guide
+# Diary User Guide
 
 ## Start
 
-Open BILLS and choose the work type that matches your daily work. There is no login. Your choice opens the right dashboard.
+Open Diary and choose the work type that matches your daily work. There is no login. Your choice opens the right dashboard.
 
 ## Meri Dukaan
 

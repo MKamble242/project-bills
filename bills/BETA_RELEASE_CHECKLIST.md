@@ -1,4 +1,4 @@
-# Project BILLS v0.1.0-beta Release Checklist
+# Diary v0.1.0-beta Release Checklist
 
 ## Before Tagging
 

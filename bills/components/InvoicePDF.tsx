@@ -188,7 +188,7 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.brand}>BILLS</Text>
+              <Text style={styles.brand}>Diary</Text>
               <Text style={styles.invoiceLabel}>{isTaxInvoice ? "TAX INVOICE" : "BILL"}</Text>
             </View>
 
@@ -269,7 +269,7 @@ export default function InvoicePDF({ invoice }: InvoicePDFProps) {
         </View>
 
         <Text style={styles.footer}>
-          Generated with Project BILLS
+          Generated with Diary
         </Text>
       </Page>
     </Document>

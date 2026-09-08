@@ -1,11 +1,11 @@
-BILLS is a local-first, mobile-friendly money diary for Indian micro-business owners.
+Diary is a local-first, mobile-friendly money diary for Indian micro-business owners.
 
 ## What it does
 
 - Meri Dukaan: record sales, expenses, and today's remaining amount.
 - Mera Kaam: track jobs, customer payments, job expenses, balance, and net amount.
 - Meri Class: track students, expected fees, payments, and pending fees.
-- Mera Hisaab: create invoices, record payments, share bills, and view customer history.
+- Hisab Kitab: create simple records, record payments, share them, and view customer history.
 - Settings: save business details and download or restore a complete backup.
 
 ## Run locally

@@ -76,12 +76,12 @@ export default function ShopDashboard() {
       <div className="mx-auto min-h-screen max-w-5xl px-4 py-4 sm:px-6 lg:px-8">
         <nav className="flex flex-wrap items-center justify-between gap-3 py-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">B</div>
-            <div><p className="text-sm font-black tracking-[0.2em]">BILLS</p><p className="text-xs text-slate-500">Meri Dukaan</p></div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-lg font-black text-white">D</div>
+            <div><p className="text-sm font-black tracking-[0.2em]">Diary</p><p className="text-xs text-slate-500">Meri Dukaan</p></div>
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Settings</Link>
-            <Link href="/invoices/new" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Create Bill</Link>
+            <Link href="/invoices/new" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Hisab Kitab</Link>
           </div>
         </nav>
 

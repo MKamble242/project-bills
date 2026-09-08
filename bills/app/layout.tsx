@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BILLS | Simple money records",
-  description: "Simple invoices and money records for local businesses.",
+  title: "Diary | Simple business records",
+  description: "A simple digital business diary for Indian micro-business owners.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

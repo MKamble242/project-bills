@@ -1,10 +1,10 @@
-# Project BILLS v0.1.0-beta Test Plan
+# Diary v0.1.0-beta Test Plan
 
 Use this guide with one or two real contractors, freelancers, shop owners, or other small-business users. Test on a phone first, then repeat the important steps on a desktop browser. Use sample customer information and real-world invoice amounts, but do not enter confidential payment credentials.
 
 ## 15-Step Test
 
-1. Open BILLS and confirm the dashboard loads with a local-only or saved-on-this-device message.
+1. Open Diary and confirm the dashboard loads with a local-only or saved-on-this-device message.
 2. Open Settings and enter a business name, phone number, UPI ID, and payment notes. Save, refresh, and confirm the values remain.
 3. Create an invoice for a real-world customer scenario. Enter the customer name, phone, address, invoice date, and due terms.
 4. Add at least three line items with different quantities, prices, and GST rates. Remove one item and add it again.
@@ -30,7 +30,7 @@ Use this guide with one or two real contractors, freelancers, shop owners, or ot
 - Would you trust the wording around manual payment recording?
 - Did the WhatsApp and UPI actions behave as expected?
 - What information is missing from the customer ledger?
-- What would make you use BILLS weekly?
+- What would make you use Diary weekly?
 - What is the one thing you would change before using it with a customer?
 
 Record the device, browser, connection state, step number, expected result, actual result, and screenshot for every problem.

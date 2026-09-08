@@ -1,4 +1,4 @@
-const CACHE_NAME = "project-bills-shell-v4";
+const CACHE_NAME = "diary-shell-v5";
 const SHELL = ["/", "/offline", "/settings", "/customers", "/invoices", "/invoices/new", "/jobs", "/students", "/shop", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
