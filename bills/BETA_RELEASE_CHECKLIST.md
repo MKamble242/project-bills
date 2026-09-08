@@ -9,6 +9,8 @@
 - [ ] Verify no API keys, service-account files, cookies, or environment secrets are in the release.
 - [ ] Verify local invoice creation, payment recording, customer ledger, backup export, and safe restore.
 - [ ] Review `git diff` and confirm only intended beta changes are included.
+- [ ] Recruit 20-40 testers across the four work types using `BETA_LAUNCH_PLAN.md`.
+- [ ] Share `BETA_FEEDBACK_TEMPLATES.md` with the tester group and review feedback weekly.
 
 ## Create the Beta Tag
 

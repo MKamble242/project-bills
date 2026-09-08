@@ -1,5 +1,5 @@
-const CACHE_NAME = "diary-shell-v5";
-const SHELL = ["/", "/offline", "/settings", "/customers", "/invoices", "/invoices/new", "/jobs", "/students", "/shop", "/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "diary-shell-v6";
+const SHELL = ["/", "/offline", "/settings", "/feedback", "/customers", "/invoices", "/invoices/new", "/jobs", "/students", "/shop", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)));

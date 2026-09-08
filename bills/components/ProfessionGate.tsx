@@ -51,13 +51,19 @@ function ProfessionSelection({ onSelected }: { onSelected: (profile: DiaryProfil
   );
 }
 
+function QuickStart({ onClose }: { onClose: () => void }) {
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"><section role="dialog" aria-modal="true" aria-labelledby="diary-quick-start" className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Welcome to Diary</p><h2 id="diary-quick-start" className="mt-2 text-2xl font-black">Start in three simple steps</h2><p className="mt-2 text-sm text-slate-600">Diary keeps your business records on this device. Download a backup from Settings before changing phones or clearing browser data.</p><ol className="mt-5 space-y-3 text-sm"><li className="rounded-xl bg-slate-50 p-3"><strong>1. Select your work</strong><span className="mt-1 block text-slate-600">You have already chosen the dashboard that fits you.</span></li><li className="rounded-xl bg-slate-50 p-3"><strong>2. Create your first record</strong><span className="mt-1 block text-slate-600">Add one sale, job, student fee, or Hisab Kitab record.</span></li><li className="rounded-xl bg-slate-50 p-3"><strong>3. Come back tomorrow</strong><span className="mt-1 block text-slate-600">Your saved records will be waiting on this device.</span></li></ol><div className="mt-5 grid grid-cols-2 gap-3"><button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Skip for now</button><button type="button" onClick={onClose} className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Start using Diary</button></div></section></div>;
+}
+
 export default function ProfessionGate({ children }: { children: React.ReactNode }) {
   const [profile, setProfileState] = useState<DiaryProfile | null>(null);
   const [checked, setChecked] = useState(false);
+  const [showQuickStart, setShowQuickStart] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setProfileState(readDiaryProfile());
+      setShowQuickStart(readDiaryProfile() !== null && window.localStorage.getItem("diary.quick-start-seen.v1") !== "yes");
       setChecked(true);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -65,13 +71,19 @@ export default function ProfessionGate({ children }: { children: React.ReactNode
 
   function setProfile(nextProfile: DiaryProfile) {
     setProfileState(writeDiaryProfile(nextProfile));
+    setShowQuickStart(true);
+  }
+
+  function closeQuickStart() {
+    window.localStorage.setItem("diary.quick-start-seen.v1", "yes");
+    setShowQuickStart(false);
   }
 
   if (!checked) return <main className="min-h-screen bg-[#f5f7fb]" />;
 
   return (
     <ProfessionContext.Provider value={{ profile, setProfile }}>
-      {profile ? children : <ProfessionSelection onSelected={setProfile} />}
+      {profile ? <>{children}{showQuickStart && <QuickStart onClose={closeQuickStart} />}</> : <ProfessionSelection onSelected={setProfile} />}
     </ProfessionContext.Provider>
   );
 }

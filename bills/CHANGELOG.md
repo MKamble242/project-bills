@@ -13,3 +13,5 @@
 - Added active and completed job views for faster daily work.
 - Made restore additive for shop, job, student, and fee records.
 - Added architecture notes for future maintenance.
+- Added a skippable first-use quick-start and a privacy-aware beta feedback page.
+- Added a five-week beta launch plan and communication templates.

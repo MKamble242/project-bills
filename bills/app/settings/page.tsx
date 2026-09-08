@@ -390,6 +390,8 @@ export default function SettingsPage() {
             </button>
           </div>
         </section>
+
+        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-black">Diary beta feedback</h2><p className="mt-2 text-sm text-slate-600">Tell us what was useful or confusing. Please do not include customer information.</p><Link href="/feedback" className="mt-4 inline-flex min-h-12 items-center rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Send feedback</Link></section>
       </div>
     </main>
   );
