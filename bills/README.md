@@ -39,3 +39,4 @@ Records are stored in this browser on this device. They are not synced to a serv
 - [BETA_INSTALL_GUIDE.md](BETA_INSTALL_GUIDE.md): tester setup, first record, backup, and feedback steps.
 - [BETA_COMMUNICATION_TEMPLATES.md](BETA_COMMUNICATION_TEMPLATES.md): ready-to-send beta messages.
 - [BETA_OPERATIONS.md](BETA_OPERATIONS.md): recruitment, tracking, metrics, analysis, and report template.
+- [BETA_SELF_TEST_REPORT.md](BETA_SELF_TEST_REPORT.md): latest production browser self-test and limitations.

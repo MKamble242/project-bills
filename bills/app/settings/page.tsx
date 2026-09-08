@@ -286,7 +286,7 @@ export default function SettingsPage() {
 
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">{dictionary.whatsAppMessageLanguage}</h2>
-          <p className="mt-2 text-sm text-slate-600">Choose the language used when sharing invoice messages on WhatsApp.</p>
+          <p className="mt-2 text-sm text-slate-600">Choose the language used when sharing Diary messages on WhatsApp.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {(["simple_english", "simple_hindi", "simple_marathi"] as const).map((language) => (
               <button
@@ -304,7 +304,7 @@ export default function SettingsPage() {
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">{dictionary.backupAndData}</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Your invoices are stored on this device. Download a backup before changing phones or clearing browser data.
+            Your records are stored on this device. Download a backup before changing phones or clearing browser data.
           </p>
           <p className="mt-2 text-sm font-semibold text-amber-800">
             {lastBackupAt ? `Last backup: ${backupAgeDays ?? 0} days ago` : "No backup created yet"}
