@@ -130,6 +130,7 @@ export default function ClassDashboard() {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Settings</Link>
+            <Link href="/expenses" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Mere Kharche</Link>
             <Link href="/students" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">View all</Link>
           </div>
         </nav>

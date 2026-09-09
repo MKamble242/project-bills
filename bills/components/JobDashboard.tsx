@@ -144,6 +144,7 @@ export default function JobDashboard() {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Settings</Link>
+            <Link href="/expenses" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Mere Kharche</Link>
             <Link href="/jobs" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">View all</Link>
             <button type="button" onClick={() => { resetMessage(); setShowCreate(true); }} className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white">+ New job</button>
           </div>

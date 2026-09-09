@@ -25,14 +25,14 @@ export function useProfession() {
 
 function ProfessionSelection({ onSelected }: { onSelected: (profile: DiaryProfile) => void }) {
   const { language } = useAppLanguage();
-  const heading = language === "hi" ? "आप किस तरह का हिसाब रखना चाहते हैं?" : "How do you want to keep your records?";
+  const heading = language === "hi" ? "आप किस तरह की डायरी रखना चाहते हैं?" : "Which diary do you want to keep?";
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-4 py-8 text-slate-950 sm:flex sm:items-center sm:justify-center">
       <section className="mx-auto w-full max-w-xl">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Diary</p>
         <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{heading}</h1>
-        <p className="mt-3 text-slate-600">Choose the work type that best matches your records.</p>
+        <p className="mt-3 text-slate-600">Choose the diary that best matches what you record.</p>
         <div className="mt-6 space-y-3">
           {professionOptions.map((option) => (
             <button
@@ -52,7 +52,7 @@ function ProfessionSelection({ onSelected }: { onSelected: (profile: DiaryProfil
 }
 
 function QuickStart({ onClose }: { onClose: () => void }) {
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"><section role="dialog" aria-modal="true" aria-labelledby="diary-quick-start" className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Welcome to Diary</p><h2 id="diary-quick-start" className="mt-2 text-2xl font-black">Start in three simple steps</h2><p className="mt-2 text-sm text-slate-600">Diary keeps your business records on this device. Download a backup from Settings before changing phones or clearing browser data.</p><ol className="mt-5 space-y-3 text-sm"><li className="rounded-xl bg-slate-50 p-3"><strong>1. Select your work</strong><span className="mt-1 block text-slate-600">You have already chosen the dashboard that fits you.</span></li><li className="rounded-xl bg-slate-50 p-3"><strong>2. Create your first record</strong><span className="mt-1 block text-slate-600">Add one sale, job, student fee, or Hisab Kitab record.</span></li><li className="rounded-xl bg-slate-50 p-3"><strong>3. Come back tomorrow</strong><span className="mt-1 block text-slate-600">Your saved records will be waiting on this device.</span></li></ol><div className="mt-5 grid grid-cols-2 gap-3"><button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Skip for now</button><button type="button" onClick={onClose} className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Start using Diary</button></div></section></div>;
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"><section role="dialog" aria-modal="true" aria-labelledby="diary-quick-start" className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Welcome to Diary</p><h2 id="diary-quick-start" className="mt-2 text-2xl font-black">Start in three simple steps</h2><p className="mt-2 text-sm text-slate-600">Diary keeps your records on this device. Download a backup from Settings before changing phones or clearing browser data.</p><ol className="mt-5 space-y-3 text-sm"><li className="rounded-xl bg-slate-50 p-3"><strong>1. Select your diary</strong><span className="mt-1 block text-slate-600">Choose the dashboard that fits you.</span></li><li className="rounded-xl bg-slate-50 p-3"><strong>2. Add your first record</strong><span className="mt-1 block text-slate-600">Record a sale, job, student fee, or personal expense.</span></li><li className="rounded-xl bg-slate-50 p-3"><strong>3. Come back tomorrow</strong><span className="mt-1 block text-slate-600">Your saved records will be waiting on this device.</span></li></ol><div className="mt-5 grid grid-cols-2 gap-3"><button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Skip for now</button><button type="button" onClick={onClose} className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Start using Diary</button></div></section></div>;
 }
 
 export default function ProfessionGate({ children }: { children: React.ReactNode }) {

@@ -1,18 +1,14 @@
 export type BusinessSettings = {
   businessName: string;
-  upiId: string;
   phoneNumber: string;
-  gstin: string;
 };
 
 export const defaultBusinessSettings: BusinessSettings = {
-  businessName: "Your Business Name",
-  upiId: "",
+  businessName: "Your name",
   phoneNumber: "",
-  gstin: "",
 };
 
-const storageKey = "project-bills.business-settings.v1";
+const storageKey = "project-bills.diary-settings.v1";
 
 export function readBusinessSettings(): BusinessSettings {
   if (typeof window === "undefined") return defaultBusinessSettings;
@@ -22,9 +18,7 @@ export function readBusinessSettings(): BusinessSettings {
     const value = parsed as Record<string, unknown>;
     return {
       businessName: typeof value.businessName === "string" && value.businessName.trim() ? value.businessName : defaultBusinessSettings.businessName,
-      upiId: typeof value.upiId === "string" ? value.upiId : "",
       phoneNumber: typeof value.phoneNumber === "string" ? value.phoneNumber : "",
-      gstin: typeof value.gstin === "string" ? value.gstin : "",
     };
   } catch {
     return defaultBusinessSettings;

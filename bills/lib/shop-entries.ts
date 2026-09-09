@@ -6,7 +6,7 @@ export type ShopEntry = {
   amountPaise: number;
   note: string;
   date: string;
-  expenseReason?: "Stock" | "Dukaan ka Rent" | "Light Bill" | "Transport" | "Helper" | "Other";
+  expenseReason?: "Stock" | "Dukaan ka Rent" | "Electricity" | "Transport" | "Helper" | "Other";
   createdAt: string;
 };
 
@@ -17,7 +17,7 @@ function isEntryType(value: unknown): value is ShopEntryType {
 }
 
 function isExpenseReason(value: unknown): value is NonNullable<ShopEntry["expenseReason"]> {
-  return value === "Stock" || value === "Dukaan ka Rent" || value === "Light Bill" || value === "Transport" || value === "Helper" || value === "Other";
+  return value === "Stock" || value === "Dukaan ka Rent" || value === "Electricity" || value === "Transport" || value === "Helper" || value === "Other";
 }
 
 export function validateShopEntry(value: unknown): ShopEntry | null {

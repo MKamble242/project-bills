@@ -1,41 +1,7 @@
-# Diary v0.1.0-beta Release Checklist
-
-## Before Tagging
+# Diary Release Checklist
 
 - [ ] Run `npm install` from the `bills` directory.
-- [ ] Run `npx tsc --noEmit` and confirm zero TypeScript errors.
-- [ ] Run `npm run build` and confirm the production build succeeds.
-- [ ] Run the 15-step guide in `BETA_TEST_PLAN.md` on a phone and desktop browser.
-- [ ] Verify no API keys, service-account files, cookies, or environment secrets are in the release.
-- [ ] Verify local invoice creation, payment recording, customer ledger, backup export, and safe restore.
-- [ ] Review `git diff` and confirm only intended beta changes are included.
-- [ ] Recruit 20-40 testers across the four work types using `BETA_LAUNCH_PLAN.md`.
-- [ ] Share `BETA_FEEDBACK_TEMPLATES.md` with the tester group and review feedback weekly.
-- [ ] Send `BETA_INSTALL_GUIDE.md` and `BETA_COMMUNICATION_TEMPLATES.md` to each tester.
-- [ ] Create the Google Sheet or Notion tables from `BETA_OPERATIONS.md`.
-
-## Create the Beta Tag
-
-Run these commands from the repository root after reviewing the changes:
-
-```bash
-git add .
-git commit -m "chore: freeze v0.1.0-beta"
-git tag v0.1.0-beta
-```
-
-Check the result:
-
-```bash
-git status
-git show --stat --oneline v0.1.0-beta
-```
-
-Push the commit and tag only when the private beta is ready:
-
-```bash
-git push origin main
-git push origin v0.1.0-beta
-```
-
-Do not commit `.env.local`, credentials, service-account JSON, or private backup exports.
+- [ ] Run lint, typecheck, and production build.
+- [ ] Test all four diary choices on mobile and desktop.
+- [ ] Test Mere Kharche totals, categories, custom category, date, and note.
+- [ ] Confirm data remains local after refresh.

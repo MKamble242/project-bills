@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { addShopEntry, deleteShopEntry, readShopEntries, updateShopEntry, type ShopEntry, type ShopEntryType } from "@/lib/shop-entries";
 
-const expenseReasons: NonNullable<ShopEntry["expenseReason"]>[] = ["Stock", "Dukaan ka Rent", "Light Bill", "Transport", "Helper", "Other"];
+const expenseReasons: NonNullable<ShopEntry["expenseReason"]>[] = ["Stock", "Dukaan ka Rent", "Electricity", "Transport", "Helper", "Other"];
 
 function dateKey(date: Date) {
   const year = date.getFullYear();
@@ -81,7 +81,7 @@ export default function ShopDashboard() {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/settings" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Settings</Link>
-            <Link href="/invoices/new" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Hisab Kitab</Link>
+            <Link href="/expenses" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700">Mere Kharche</Link>
           </div>
         </nav>
 

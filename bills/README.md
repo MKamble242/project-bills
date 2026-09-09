@@ -5,7 +5,7 @@ Diary is a local-first, mobile-friendly money diary for Indian micro-business ow
 - Meri Dukaan: record sales, expenses, and today's remaining amount.
 - Mera Kaam: track jobs, customer payments, job expenses, balance, and net amount.
 - Meri Class: track students, expected fees, payments, and pending fees.
-- Hisab Kitab: create simple records, record payments, share them, and view customer history.
+- Mere Kharche: quickly record and review personal expenses.
 - Settings: save business details and download or restore a complete backup.
 
 ## Run locally

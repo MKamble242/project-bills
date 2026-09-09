@@ -27,7 +27,7 @@ export function formatDateIndian(dateString: string): string {
 
 /**
  * Format date for display with short month name (e.g., "24 Aug 2026")
- * Useful for readable invoice dates
+ * Useful for readable diary dates
  */
 export function formatDateReadable(dateString: string): string {
   const date = new Date(dateString);
